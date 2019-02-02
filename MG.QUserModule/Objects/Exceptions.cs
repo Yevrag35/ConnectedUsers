@@ -10,12 +10,13 @@ namespace MG.QUserModule
 
         public string OffendingServer { get; }
 
-        public QUserException(string cmdArg) { }
+        public QUserException(string cmdArg)
+            : base(string.Format(defMsg, cmdArg)) { }
 
-        private static ParseServer(string cmdArg)
-        {
+        //private static ParseServer(string cmdArg)
+        //{
 
-        }
+        //}
     }
 
     public class GenericMethodException : TargetException
@@ -29,17 +30,17 @@ namespace MG.QUserModule
         public GenericMethodException(Type attType, string methodName, Enum e)
             : base(string.Format(defMsg, methodName))
         {
-            AttributeType = attType;
-            OffendingMethod = methodName;
-            OffendingEnum = e;
+            this.AttributeType = attType;
+            this.OffendingMethod = methodName;
+            this.OffendingEnum = e;
         }
 
         public GenericMethodException(Type attType, string methodName, Enum e, Exception innerException)
             : base(string.Format(defMsg, methodName), innerException)
         {
-            AttributeType = attType;
-            OffendingMethod = methodName;
-            OffendingEnum = e;
+            this.AttributeType = attType;
+            this.OffendingMethod = methodName;
+            this.OffendingEnum = e;
         }
     }
 }

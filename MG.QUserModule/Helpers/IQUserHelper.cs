@@ -4,10 +4,8 @@ using System.Collections.Generic;
 
 namespace MG.QUserModule
 {
-    public interface IQUserHelper
+    public interface IQUserHelper : IWildcardMatcher
     {
         IList<IQUserObject> RunQuery(string computerName);
-
-        IList<IQUserObject> PerformWildcardMatch(IList<IQUserObject> list, string property, string wildcardSearch);
     }
 }

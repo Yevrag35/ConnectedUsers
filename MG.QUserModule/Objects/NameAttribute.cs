@@ -9,9 +9,9 @@ namespace MG.QUserModule.Objects
         private readonly object _val;
         public object Value => _val;
         public Type ValueType => _val.GetType();
-        public bool ValueIsArray => ValueType.IsArray;
-        public bool ValueIsOneItemArray => ValueIsArray && ValueCount == 1;
-        public long ValueCount => !ValueIsArray ? 1 : ((IEnumerable)_val).Cast<object>().ToArray().LongLength;
+        public bool ValueIsArray => this.ValueType.IsArray;
+        public bool ValueIsOneItemArray => this.ValueIsArray && this.ValueCount == 1;
+        public long ValueCount => !this.ValueIsArray ? 1 : ((IEnumerable)_val).Cast<object>().ToArray().LongLength;
 
         public NameAttribute(string name) =>
             _val = name;

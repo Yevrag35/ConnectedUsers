@@ -21,27 +21,23 @@ namespace MG.QUserModule.Objects
         #region CONSTRUCTORS
         public QUserObject(string hn, string un, string sn, string state, int id, string it, string lot)
         {
-            if (!string.IsNullOrWhiteSpace(it) && int.TryParse(it, out int tryint))
+            if (!string.IsNullOrWhiteSpace(it) && int.TryParse(it, out var tryint))
             {
                 it = string.Format("0:{0}", tryint);
             }
-            if (!string.IsNullOrWhiteSpace(it) && TimeSpan.TryParse(it, out TimeSpan ts))
+            if (!string.IsNullOrWhiteSpace(it) && TimeSpan.TryParse(it, out var ts))
             {
-                IdleTime = ts;
+                this.IdleTime = ts;
             }
 
-            HostName = hn;
-            UserName = un;
-            SessionName = sn;
+            this.HostName = hn;
+            this.UserName = un;
+            this.SessionName = sn;
             //IsCurrentSession = isCur;
-            State = GetSessionState(state);
-            Id = id;
-            LogonTime = DateTime.Parse(lot);
+            this.State = this.GetSessionState(state);
+            this.Id = id;
+            this.LogonTime = DateTime.Parse(lot);
         }
-
-        #endregion
-
-        #region STATIC METHODS
 
         #endregion
 
@@ -53,9 +49,9 @@ namespace MG.QUserModule.Objects
 
         private T[] GetEnumValues<T>() where T : Enum
         {
-            Array arr = typeof(T).GetEnumValues();
+            var arr = typeof(T).GetEnumValues();
             var tArr = new T[arr.Length];
-            for (int i = 0; i < arr.Length; i++)
+            for (var i = 0; i < arr.Length; i++)
             {
                 var val = (T)arr.GetValue(i);
                 tArr[i] = val;
@@ -65,11 +61,11 @@ namespace MG.QUserModule.Objects
 
         private T GetEnumFromValue<T>(object value, Type attributeType) where T : Enum
         {
-            T[] arr = GetEnumValues<T>();
-            for (int i = 0; i < arr.Length; i++)
+            var arr = this.GetEnumValues<T>();
+            for (var i = 0; i < arr.Length; i++)
             {
                 var v = (Enum)arr.GetValue(i);
-                object o = GetAttributeValue<object>(v, attributeType);
+                var o = this.GetAttributeValue<object>(v, attributeType);
                 if (o.Equals(value))
                 {
                     return (T)v;
@@ -85,13 +81,13 @@ namespace MG.QUserModule.Objects
             else if (attributeType.IsInterface)
                 throw new ArgumentException("This method does not support interfaces for the attributeType!");
 
-            var castedObj = (IAttribute)InvokeGenericGetAtts(e, attributeType);
+            var castedObj = (IAttribute)this.InvokeGenericGetAtts(e, attributeType);
             if (castedObj.ValueIsArray && !castedObj.ValueIsOneItemArray)
                 throw new InvalidOperationException("The casted object has multiple values!");
 
             else if (castedObj.ValueIsOneItemArray)
             {
-                object[] objs = ((IEnumerable)castedObj.Value).Cast<object>().ToArray();
+                var objs = ((IEnumerable)castedObj.Value).Cast<object>().ToArray();
                 return (T)objs[0];
             }
 
@@ -105,11 +101,11 @@ namespace MG.QUserModule.Objects
 
         private object InvokeGenericGetAtts(Enum e, Type attType)
         {
-            FieldInfo fi = GetFieldInfo(e);
-            Type t = GetType();
+            var fi = this.GetFieldInfo(e);
+            var t = this.GetType();
 
-            MethodInfo mi = t.GetMethod(GenericAttsGetMethod, BindingFlags.Instance | BindingFlags.NonPublic);
-            MethodInfo mgm = mi.MakeGenericMethod(attType);
+            var mi = t.GetMethod(GenericAttsGetMethod, BindingFlags.Instance | BindingFlags.NonPublic);
+            var mgm = mi.MakeGenericMethod(attType);
             object outObj = null;
             try
             {

@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MG.QUserModule</RootNamespace>
     <AssemblyName>MG.QUserModule</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,17 +34,27 @@
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.ActiveDirectory.Management, Version=10.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceAssemblies\Microsoft.ActiveDirectory.Management.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Management.Automation.dll.10.0.10586.0\lib\net40\System.Management.Automation.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceAssemblies\System.Management.Automation.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Bases\BaseQCmdlet.cs" />
+    <Compile Include="Cmdlets\Bases\BaseQCmdlet.cs" />
     <Compile Include="Cmdlets\GetQUser.cs" />
+    <Compile Include="Cmdlets\RemoveQUser.cs" />
+    <Compile Include="Helpers\IQUserRemover.cs" />
+    <Compile Include="Helpers\IWildcardMatcher.cs" />
+    <Compile Include="Helpers\QUserRemover.cs" />
+    <Compile Include="Helpers\WildcardMatcher.cs" />
     <Compile Include="Objects\Exceptions.cs" />
     <Compile Include="Objects\IAttribute.cs" />
     <Compile Include="Helpers\IQUserHelper.cs" />
@@ -57,7 +68,6 @@
   <ItemGroup>
     <None Include="TypeFormats\QUserObject.ps1xml" />
     <Resource Include="GenerateManifest.ps1" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ReferenceAssemblies\" />
