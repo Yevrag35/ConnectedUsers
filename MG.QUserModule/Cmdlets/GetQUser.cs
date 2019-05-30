@@ -1,23 +1,36 @@
 ﻿using MG.QUserModule.Objects;
 using Microsoft.ActiveDirectory.Management;
 using System;
+using System.Collections.Generic;
 using System.Management.Automation;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MG.QUserModule.Cmdlets
 {
     [Cmdlet(VerbsCommon.Get, "QUser", DefaultParameterSetName = "None")]
     [OutputType(typeof(IQUserObject))]
     [Alias("Get-ConnectedUser", "gcu")]
-    public class GetQUser : BaseQCmdlet
+    public class GetQUser : ProgressCmdlet
     {
         private const string DNS_HOSTNAME = "DNSHostName";
+        private List<string> comps;
+        private int _tot;
+        protected override string Activity => "Logged On User Query";
+        protected override ICollection<string> Items => comps;
+        protected override string StatusFormat => "Querying machine {0}/{1}...";
+        protected override int TotalCount => _tot;
 
         [Parameter(Mandatory = true, ParameterSetName = "ByADComputerPipeline", DontShow = true,
             ValueFromPipeline = true)]
         public ADComputer InputObject { get; set; }
 
-        protected override void BeginProcessing() => base.BeginProcessing();
+        protected override void BeginProcessing()
+        {
+            base.BeginProcessing();
+            comps = new List<string>();
+        }
 
         protected override void ProcessRecord()
         {
@@ -26,18 +39,74 @@ namespace MG.QUserModule.Cmdlets
             {
                 compStr = this.InputObject.DNSHostName;
             }
-            var objs = GetQUserOutput(compStr, _helper);
+            comps.Add(compStr);
+        }
+
+        protected override void EndProcessing()
+        {
+            _tot = comps.Count;
+            var list = this.Execute();
+            WriteObject(list, true);
+        }
+
+        protected private List<IQUserObject> Execute()
+        {
+            var taskList = new List<Task<IEnumerable<IQUserObject>>>();
+            var final = new List<IQUserObject>();
+
+            for (int n = 0; n < comps.Count; n++)
+            {
+                taskList.Add(this.ProcessAsync(comps[n]));
+            }
+
+            while (taskList.Count > 0)
+            {
+                this.UpdateProgress(0, taskList.Count);
+                for (int i = taskList.Count - 1; i >= 0; i--)
+                {
+                    Task<IEnumerable<IQUserObject>> t = taskList[i];
+
+                    if (t.IsCompleted)
+                    {
+                        if (!t.IsFaulted && !t.IsCanceled && t.Result != null)
+                        {
+                            final.AddRange(t.Result);
+                        }
+                        taskList.Remove(t);
+                    }
+                }
+                Thread.Sleep(1000);
+            }
+            this.UpdateProgress(0);
+            return final;
+        }
+
+        private async Task<IEnumerable<IQUserObject>> ProcessAsync(string computerName)
+        {
+            IList<IQUserObject> objs = null;
+            try
+            {
+                objs = await GetQUserOutputAsync(computerName, _helper);
+            }
+            catch
+            {
+                return null;
+            }
             if (this.MyInvocation.BoundParameters.ContainsKey("UserName"))
-                this.WriteObject(this.FilterByUserName(objs, this.UserName, _helper), true);
+                return this.FilterByUserName(objs, this.UserName, _helper);
+            //this.WriteObject(this.FilterByUserName(objs, this.UserName, _helper), true);
 
             else if (this.MyInvocation.BoundParameters.ContainsKey("SessionName"))
-                this.WriteObject(this.FilterBySessionName(objs, this.SessionName), true);
+                return this.FilterBySessionName(objs, this.SessionName);
+            //this.WriteObject(this.FilterBySessionName(objs, this.SessionName), true);
 
             else if (this.MyInvocation.BoundParameters.ContainsKey("SessionId"))
-                this.WriteObject(this.FilterBySessionId(objs, this.SessionId), true);
+                return this.FilterBySessionId(objs, this.SessionId);
+            //this.WriteObject(this.FilterBySessionId(objs, this.SessionId), true);
 
             else
-                this.WriteObject(objs, true);
+                return objs;
+            //this.WriteObject(objs, true);
         }
 
         private string ResolveAD(PSObject adObject)

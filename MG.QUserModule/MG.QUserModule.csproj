@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets\Bases\BaseQCmdlet.cs" />
+    <Compile Include="Cmdlets\Bases\ProgressCmdlet.cs" />
     <Compile Include="Cmdlets\GetQUser.cs" />
     <Compile Include="Cmdlets\RemoveQUser.cs" />
     <Compile Include="Helpers\IQUserRemover.cs" />

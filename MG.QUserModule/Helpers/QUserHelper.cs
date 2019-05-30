@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace MG.QUserModule
 {
@@ -24,6 +25,15 @@ namespace MG.QUserModule
             var psi = this.NewProcessStartInfo(computerName);
             var executedLines = this.RunAndRead(psi);
             return this.ParseOutput(executedLines, computerName);
+        }
+        public async Task<IList<IQUserObject>> RunQueryAsync(string computerName)
+        {
+            return await Task.Run(() =>
+            {
+                var psi = this.NewProcessStartInfo(computerName);
+                var executedLines = this.RunAndRead(psi);
+                return this.ParseOutput(executedLines, computerName);
+            });
         }
 
         #region BACKEND/PRIVATE METHODS
@@ -53,9 +63,12 @@ namespace MG.QUserModule
             })
             {
                 proc.Start();
-                while (!proc.StandardOutput.EndOfStream)
-                    list.Add(proc.StandardOutput.ReadLine());
+                proc.WaitForExit(3000);
+                //while (!proc.StandardOutput.EndOfStream)
+                //    list.Add(proc.StandardOutput.ReadLine());
 
+                string[] allLines = proc.StandardOutput.ReadToEnd().Split(new string[1] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                list.AddRange(allLines);
                 var errLines = proc.StandardError.ReadToEnd();
                 if (!string.IsNullOrWhiteSpace(errLines) && !errLines.Contains("No User exists for *"))
                     throw new InvalidOperationException(errLines);

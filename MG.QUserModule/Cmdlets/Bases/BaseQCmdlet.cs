@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
+using System.Threading.Tasks;
 
 namespace MG.QUserModule.Cmdlets
 {
@@ -44,6 +45,9 @@ namespace MG.QUserModule.Cmdlets
 
         public static IList<IQUserObject> GetQUserOutput(string computerName, IQUserHelper helper) =>
             helper.RunQuery(computerName);
+
+        public static async Task<IList<IQUserObject>> GetQUserOutputAsync(string computerName, IQUserHelper helper) =>
+            await helper.RunQueryAsync(computerName);
 
         protected private void VerifyParameters()
         {
