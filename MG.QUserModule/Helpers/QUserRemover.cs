@@ -26,14 +26,14 @@ namespace MG.QUserModule
 
         public void LogoffRemoteUser(IQUserObject sid)
         {
-            var psi = this.NewProcessStartInfo(sid.Id, sid.HostName);
+            ProcessStartInfo psi = this.NewProcessStartInfo(sid.Id, sid.HostName);
             this.Run(psi);
         }
 
         #region BACKEND/PRIVATE METHODS
         private ProcessStartInfo NewProcessStartInfo(int sessionId, string serverName)
         {
-            var cmdArgs = !string.IsNullOrWhiteSpace(serverName) && serverName != "localhost" && serverName != Environment.GetEnvironmentVariable("COMPUTERNAME")
+            string cmdArgs = !string.IsNullOrWhiteSpace(serverName) && serverName != "localhost" && serverName != Environment.GetEnvironmentVariable("COMPUTERNAME")
                 ? string.Format(LO_ARGS_SERVER, sessionId, serverName)
                 : string.Format(LO_ARGS, sessionId);
 
@@ -55,7 +55,7 @@ namespace MG.QUserModule
             })
             {
                 proc.Start();
-                var errLines = proc.StandardError.ReadToEnd();
+                string errLines = proc.StandardError.ReadToEnd();
                 if (!string.IsNullOrWhiteSpace(errLines))
                     throw new InvalidOperationException(errLines);
             }

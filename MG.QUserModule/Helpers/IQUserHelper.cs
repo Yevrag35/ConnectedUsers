@@ -7,7 +7,7 @@ namespace MG.QUserModule
 {
     public interface IQUserHelper : IWildcardMatcher
     {
-        IList<IQUserObject> RunQuery(string computerName);
-        Task<IList<IQUserObject>> RunQueryAsync(string computerName);
+        List<IQUserObject> RunQuery(string computerName, int timeoutInMs);
+        Task<List<IQUserObject>> RunQueryAsync(string computerName, int timeoutInMs);
     }
 }

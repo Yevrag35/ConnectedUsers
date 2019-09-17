@@ -43,15 +43,15 @@ namespace MG.QUserModule.Cmdlets
         protected private IEnumerable<IQUserObject> FilterBySessionId(IList<IQUserObject> list, int sessionId) =>
             list.Where(x => x.Id == sessionId);
 
-        public static IList<IQUserObject> GetQUserOutput(string computerName, IQUserHelper helper) =>
-            helper.RunQuery(computerName);
+        public static List<IQUserObject> GetQUserOutput(string computerName, int timeoutInMs, IQUserHelper helper) =>
+            helper.RunQuery(computerName, timeoutInMs);
 
-        public static async Task<IList<IQUserObject>> GetQUserOutputAsync(string computerName, IQUserHelper helper) =>
-            await helper.RunQueryAsync(computerName);
+        public static async Task<List<IQUserObject>> GetQUserOutputAsync(string computerName, int timeoutInMs, IQUserHelper helper) =>
+            await helper.RunQueryAsync(computerName, timeoutInMs);
 
         protected private void VerifyParameters()
         {
-            var check = (this.MyInvocation.BoundParameters.ContainsKey("UserName") &&
+            bool check = (this.MyInvocation.BoundParameters.ContainsKey("UserName") &&
                 this.MyInvocation.BoundParameters.ContainsKey("SessionName")) || (
                 this.MyInvocation.BoundParameters.ContainsKey("UserName") &&
                 this.MyInvocation.BoundParameters.ContainsKey("SessionId")) ||
