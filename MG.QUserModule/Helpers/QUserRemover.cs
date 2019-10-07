@@ -26,7 +26,7 @@ namespace MG.QUserModule
 
         public void LogoffRemoteUser(IQUserObject sid)
         {
-            ProcessStartInfo psi = this.NewProcessStartInfo(sid.Id, sid.HostName);
+            ProcessStartInfo psi = this.NewProcessStartInfo(sid.Id.Value, sid.HostName);
             this.Run(psi);
         }
 

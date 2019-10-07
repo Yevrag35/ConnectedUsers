@@ -13,7 +13,7 @@ namespace MG.QUserModule
     public class QUserHelper : WildcardMatcher, IQUserHelper
     {
         private const string QUSER_EXE = "quser.exe";
-        private const string REGEX_EXP = @"^(\s|\>)(\S*)\s{1,}(console|rdp\S*|\s)\s{1,}((?:[0-9]){1,})\s{1,}(Active|Disc)\s{1,}(none|\.|\d|\d{1,2}\:\d{1,2}|\d{1,2}\:\d{1,2}\:\d{1,2})\s{1,}(.{1,})$";
+        private const string REGEX_EXP = @"^(\s*|\>)(\S*)\s{1,}(console|rdp\S*|\s)\s{1,}((?:[0-9]|\s){1,})\s{1,}(Active|Disc|\s)\s{1,}(\s|none|\.|\d|\d{1,2}\:\d{1,2}|\d{1,2}\:\d{1,2}\:\d{1,2})\s{1,}(.{1,})$";
 
         private static readonly string QUSER_PATH = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.System),
