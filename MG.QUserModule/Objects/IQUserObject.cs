@@ -8,9 +8,9 @@ namespace MG.QUserModule.Objects
         string UserName { get; }
         string SessionName { get; }
         //bool IsCurrentSession { get; }
-        SessionState State { get; }
-        int Id { get; }
+        SessionState? State { get; }
+        int? Id { get; }
         TimeSpan? IdleTime { get; }
-        DateTime LogonTime { get; }
+        DateTime? LogonTime { get; }
     }
 }

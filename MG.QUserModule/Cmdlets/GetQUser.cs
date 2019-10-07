@@ -26,6 +26,9 @@ namespace MG.QUserModule.Cmdlets
             ValueFromPipeline = true)]
         public ADComputer InputObject { get; set; }
 
+        [Parameter(Mandatory = false)]
+        public int TimeoutInMs = 3000;
+
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
@@ -45,7 +48,15 @@ namespace MG.QUserModule.Cmdlets
         protected override void EndProcessing()
         {
             _tot = comps.Count;
-            var list = this.Execute();
+            List<IQUserObject> list = null;
+            if (_tot == 1)
+            {
+                list = GetQUserOutput(comps[0], this.TimeoutInMs, _helper);
+            }
+            else
+            {
+                list = this.Execute();
+            }
             WriteObject(list, true);
         }
 
@@ -86,7 +97,7 @@ namespace MG.QUserModule.Cmdlets
             IList<IQUserObject> objs = null;
             try
             {
-                objs = await GetQUserOutputAsync(computerName, _helper);
+                objs = await GetQUserOutputAsync(computerName, this.TimeoutInMs, _helper);
             }
             catch
             {
@@ -111,8 +122,8 @@ namespace MG.QUserModule.Cmdlets
 
         private string ResolveAD(PSObject adObject)
         {
-            var adType = adObject.ImmediateBaseObject.GetType();
-            var prop = adType.GetProperty(DNS_HOSTNAME, BindingFlags.Public | BindingFlags.Instance);
+            Type adType = adObject.ImmediateBaseObject.GetType();
+            PropertyInfo prop = adType.GetProperty(DNS_HOSTNAME, BindingFlags.Public | BindingFlags.Instance);
             return prop.GetValue(adObject.ImmediateBaseObject) as string;
         }
     }

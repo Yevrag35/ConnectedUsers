@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -11,7 +13,7 @@ namespace MG.QUserModule
     public class QUserHelper : WildcardMatcher, IQUserHelper
     {
         private const string QUSER_EXE = "quser.exe";
-        private const string REGEX_EXP = @"^(\s|\>)(\S*)\s{1,}(console|rdp\S*|\s)\s{1,}((?:[0-9]){1,})\s{1,}(Active|Disc)\s{1,}(none|\.|\d|\d{1,2}\:\d{1,2}|\d{1,2}\:\d{1,2}\:\d{1,2})\s{1,}(.{1,})$";
+        private const string REGEX_EXP = @"^(\s*|\>)(\S*)\s{1,}(console|rdp\S*|\s)\s{1,}((?:[0-9]|\s){1,})\s{1,}(Active|Disc|\s)\s{1,}(\s|none|\.|\d|\d{1,2}\:\d{1,2}|\d{1,2}\:\d{1,2}\:\d{1,2})\s{1,}(.{1,})$";
 
         private static readonly string QUSER_PATH = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.System),
@@ -20,18 +22,18 @@ namespace MG.QUserModule
 
         public QUserHelper() { }
 
-        public IList<IQUserObject> RunQuery(string computerName)
+        public List<IQUserObject> RunQuery(string computerName, int timeoutInMs)
         {
-            var psi = this.NewProcessStartInfo(computerName);
-            var executedLines = this.RunAndRead(psi);
+            ProcessStartInfo psi = this.NewProcessStartInfo(computerName);
+            List<string> executedLines = this.RunAndRead(psi, timeoutInMs);
             return this.ParseOutput(executedLines, computerName);
         }
-        public async Task<IList<IQUserObject>> RunQueryAsync(string computerName)
+        public async Task<List<IQUserObject>> RunQueryAsync(string computerName, int timeoutInMs)
         {
             return await Task.Run(() =>
             {
-                var psi = this.NewProcessStartInfo(computerName);
-                var executedLines = this.RunAndRead(psi);
+                ProcessStartInfo psi = this.NewProcessStartInfo(computerName);
+                List<string> executedLines = this.RunAndRead(psi, timeoutInMs);
                 return this.ParseOutput(executedLines, computerName);
             });
         }
@@ -50,11 +52,39 @@ namespace MG.QUserModule
                 FileName = QUSER_PATH,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.ASCII,
+                StandardErrorEncoding = Encoding.ASCII,
                 UseShellExecute = false
             };
         }
 
-        public IList<string> RunAndRead(ProcessStartInfo psi)
+        public List<string[]> RunAndReadTest(ProcessStartInfo psi, int timeoutInMs)
+        {
+            var list = new List<string[]>();
+            using (var proc = new Process
+            {
+                StartInfo = psi
+            })
+            {
+                proc.Start();
+                proc.WaitForExit(3000);
+
+                string[] allLines = proc.StandardOutput.ReadToEnd().Split(new string[3] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                for (int i = 1; i < allLines.Length; i++)
+                {
+                    string line = allLines[i];
+                    var strList = line.Split(new string[1] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+                }
+                string errLines = proc.StandardError.ReadToEnd();
+                if (!string.IsNullOrWhiteSpace(errLines) && !errLines.Contains("No User exists for *"))
+                    throw new InvalidOperationException(errLines);
+
+                return list;
+            }
+        }
+
+        public List<string> RunAndRead(ProcessStartInfo psi, int timeoutInMs)
         {
             var list = new List<string>();
             using (var proc = new Process
@@ -64,12 +94,10 @@ namespace MG.QUserModule
             {
                 proc.Start();
                 proc.WaitForExit(3000);
-                //while (!proc.StandardOutput.EndOfStream)
-                //    list.Add(proc.StandardOutput.ReadLine());
 
-                string[] allLines = proc.StandardOutput.ReadToEnd().Split(new string[1] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                string[] allLines = proc.StandardOutput.ReadToEnd().Split(new string[3] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
                 list.AddRange(allLines);
-                var errLines = proc.StandardError.ReadToEnd();
+                string errLines = proc.StandardError.ReadToEnd();
                 if (!string.IsNullOrWhiteSpace(errLines) && !errLines.Contains("No User exists for *"))
                     throw new InvalidOperationException(errLines);
 
@@ -80,26 +108,28 @@ namespace MG.QUserModule
             }
         }
 
-        private IList<IQUserObject> ParseOutput(IList<string> strs, string hostName)
+        private List<IQUserObject> ParseOutput(IList<string> strs, string hostName)
         {
-            IList<IQUserObject> list = new List<IQUserObject>(strs.Count);
-            for (var i = 0; i < strs.Count; i++)
+            var list = new List<IQUserObject>(strs.Count);
+            for (int i = 0; i < strs.Count; i++)
             {
-                var str = strs[i];
-                var mtc = Regex.Match(str, REGEX_EXP);
+                string str = strs[i];
+                Match mtc = Regex.Match(str, REGEX_EXP);
                 if (mtc.Success)
                 {
-                    var sesn = mtc.Groups[3].Value;
+                    string sesn = mtc.Groups[3].Value;
 
-                    //bool isCur = mtc.Groups[1].Value.Equals(">");
-                    var userName = mtc.Groups[2].Value.Trim();
-                    var session = !string.IsNullOrWhiteSpace(sesn) ? sesn : null;
-                    var id = Convert.ToInt32(mtc.Groups[4].Value.Trim());
-                    var state = mtc.Groups[5].Value.Trim();
-                    var idleTime = mtc.Groups[6].Value.Trim();
-                    var logonTime = mtc.Groups[7].Value.Trim();
+                    bool isCur = mtc.Groups[1].Value != null &&
+                        mtc.Groups[1].Value.Contains(">");
 
-                    list.Add(new QUserObject(hostName, userName, session, state, id, idleTime, logonTime));
+                    string userName = mtc.Groups[2].Value.Trim();
+                    string session = !string.IsNullOrWhiteSpace(sesn) ? sesn : null;
+                    int id = Convert.ToInt32(mtc.Groups[4].Value.Trim());
+                    string state = mtc.Groups[5].Value.Trim();
+                    string idleTime = mtc.Groups[6].Value.Trim();
+                    string logonTime = mtc.Groups[7].Value.Trim();
+
+                    list.Add(new QUserObject(isCur, hostName, userName, session, state, id, idleTime, logonTime));
                 }
             }
             return list;

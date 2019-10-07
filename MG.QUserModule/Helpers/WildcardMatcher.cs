@@ -14,11 +14,11 @@ namespace MG.QUserModule
                 throw new ArgumentException("Only 'SessionName' and 'UserName' support wildcard searching!");
 
             var search = new WildcardPattern(wildcardSearch, WildcardOptions.IgnoreCase);
-            var pi = typeof(IQUserObject).GetProperty(property, BindingFlags.Public | BindingFlags.Instance);
-            for (var i = list.Count - 1; i >= 0; i--)
+            PropertyInfo pi = typeof(IQUserObject).GetProperty(property, BindingFlags.Public | BindingFlags.Instance);
+            for (int i = list.Count - 1; i >= 0; i--)
             {
-                var obj = list[i];
-                var value = pi.GetValue(obj) as string;
+                IQUserObject obj = list[i];
+                string value = pi.GetValue(obj) as string;
                 if (!search.IsMatch(value))
                     list.Remove(obj);
             }

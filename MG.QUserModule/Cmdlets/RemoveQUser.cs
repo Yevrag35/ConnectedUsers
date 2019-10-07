@@ -31,6 +31,9 @@ namespace MG.QUserModule.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
+        [Parameter(Mandatory = false)]
+        public int TimeoutInMs = 3000;
+
         #endregion
 
         protected override void BeginProcessing()
@@ -51,7 +54,7 @@ namespace MG.QUserModule.Cmdlets
         {
             if (!this.ParameterSetName.Contains("Pipeline"))
             {
-                var objs = GetQUserOutput(ComputerName, _helper);
+                IList<IQUserObject> objs = GetQUserOutput(ComputerName, this.TimeoutInMs, _helper);
                 if (this.MyInvocation.BoundParameters.ContainsKey("UserName"))
                     _list.AddRange(base.FilterByUserName(objs, this.UserName, this.Matcher));
 
@@ -71,7 +74,7 @@ namespace MG.QUserModule.Cmdlets
         {
             for (int i = 1; i <= _list.Count; i++)
             {
-                var sid = _list[i-1];
+                IQUserObject sid = _list[i-1];
                 if (this.Force || this.ShouldProcess(sid.UserName + " - " + sid.HostName, "Logging off"))
                 {
                     this.UpdateProgress(0, i, sid);
