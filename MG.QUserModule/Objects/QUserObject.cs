@@ -19,31 +19,46 @@ namespace MG.QUserModule.Objects
         public DateTime? LogonTime { get; }
 
         #region CONSTRUCTORS
-        //public QUserObject(string[] strings)
-        //{
-
-        //}
 
         public QUserObject(bool? isCurrent, string hn, string un, string sn, string state, int? id, string it, string lot)
         {
-            if (!string.IsNullOrWhiteSpace(it) && int.TryParse(it, out int tryint))
-            {
-                it = string.Format("0:{0}", tryint);
-            }
-            if (!string.IsNullOrWhiteSpace(it) && TimeSpan.TryParse(it, out TimeSpan ts))
-            {
-                this.IdleTime = ts;
-            }
-
+            this.IdleTime = this.FormatIdleTime(it);
             this.HostName = hn;
             this.UserName = un;
             this.SessionName = sn;
             this.IsCurrentSession = isCurrent;
-            this.State = state.Equals("Disc", StringComparison.CurrentCultureIgnoreCase)
-                ? SessionState.Disconnected
-                : SessionState.Active;
+            this.State = state.Equals("Active", StringComparison.CurrentCultureIgnoreCase)
+                ? SessionState.Active
+                : SessionState.Disconnected;
             this.Id = id;
-            this.LogonTime = DateTime.Parse(lot);
+            this.LogonTime = this.FormatLogonTime(lot);
+        }
+
+        #endregion
+
+        #region PRIVATE/BACKEND METHODS
+        private DateTime? FormatLogonTime(string possibleLogonTime)
+        {
+            return DateTime.TryParse(possibleLogonTime, out DateTime dt)
+                ? dt
+                : (DateTime?)null;
+        }
+
+        private TimeSpan? FormatIdleTime(string possibleIdleTime)
+        {
+            TimeSpan? idleTime = null;
+            if (possibleIdleTime != null)
+            {
+                if (int.TryParse(possibleIdleTime, out int tryInt))
+                {
+                    idleTime = new TimeSpan(0, tryInt, 0);
+                }
+                else if (TimeSpan.TryParse(possibleIdleTime, out TimeSpan ts))
+                {
+                    idleTime = ts;
+                }
+            }
+            return idleTime;
         }
 
         #endregion

@@ -7,6 +7,7 @@
                 <TypeName>MG.QUserModule.Objects.QUserObject</TypeName>
             </ViewSelectedBy>
             <TableControl>
+				<AutoSize/>
                 <TableHeaders>
 					<TableColumnHeader>
                         <Alignment>Right</Alignment>
@@ -17,6 +18,9 @@
                     <TableColumnHeader>
                         <Alignment>Left</Alignment>
                     </TableColumnHeader>
+					<TableColumnHeader>
+						<Alignment>Left</Alignment>
+					</TableColumnHeader>
                     <TableColumnHeader>
                         <Alignment>Left</Alignment>
                     </TableColumnHeader>
@@ -44,6 +48,9 @@
                             <TableColumnItem>
                                 <PropertyName>SessionName</PropertyName>
                             </TableColumnItem>
+							<TableColumnItem>
+								<PropertyName>IsCurrentSession</PropertyName>
+							</TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>State</PropertyName>
                             </TableColumnItem>

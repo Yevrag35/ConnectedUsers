@@ -13,7 +13,7 @@ namespace MG.QUserModule
     public class QUserHelper : WildcardMatcher, IQUserHelper
     {
         private const string QUSER_EXE = "quser.exe";
-        private const string REGEX_EXP = @"^(\s*|\>)(\S*)\s{1,}(console|rdp\S*|\s)\s{1,}((?:[0-9]|\s){1,})\s{1,}(Active|Disc|\s)\s{1,}(\s|none|\.|\d|\d{1,2}\:\d{1,2}|\d{1,2}\:\d{1,2}\:\d{1,2})\s{1,}(.{1,})$";
+        private const string REGEX_EXP = @"^(?<IsCurrent>\s|>)(?<UserName>\w+)\s*(?<SessionName>rdp[^\s]*)?\s*(?<ID>\d*)\s*(?<STATE>[^\s]*)\s*(?<IdleTime>[^\s]*)\s*(?<LogonTime>.+)";
 
         private static readonly string QUSER_PATH = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.System),
@@ -117,19 +117,35 @@ namespace MG.QUserModule
                 Match mtc = Regex.Match(str, REGEX_EXP);
                 if (mtc.Success)
                 {
-                    string sesn = mtc.Groups[3].Value;
+                    Group grp = mtc.Groups["SessionName"];
+                    string sesn = !string.IsNullOrEmpty(grp.Value)
+                        ? grp.Value.Trim()
+                        : null;
 
-                    bool isCur = mtc.Groups[1].Value != null &&
-                        mtc.Groups[1].Value.Contains(">");
+                    bool isCur = !string.IsNullOrWhiteSpace(mtc.Groups["IsCurrent"].Value) &&
+                        mtc.Groups["IsCurrent"].Value.Contains(">");
 
-                    string userName = mtc.Groups[2].Value.Trim();
-                    string session = !string.IsNullOrWhiteSpace(sesn) ? sesn : null;
-                    int id = Convert.ToInt32(mtc.Groups[4].Value.Trim());
-                    string state = mtc.Groups[5].Value.Trim();
-                    string idleTime = mtc.Groups[6].Value.Trim();
-                    string logonTime = mtc.Groups[7].Value.Trim();
+                    string userName = !string.IsNullOrWhiteSpace(mtc.Groups["UserName"].Value)
+                        ? mtc.Groups["UserName"].Value.Trim()
+                        : null;
 
-                    list.Add(new QUserObject(isCur, hostName, userName, session, state, id, idleTime, logonTime));
+                    int? id = !string.IsNullOrWhiteSpace(mtc.Groups["ID"].Value)
+                        ? Convert.ToInt32(mtc.Groups["ID"].Value.Trim())
+                        : (int?)null;
+                    
+                    string state = !string.IsNullOrWhiteSpace(mtc.Groups["STATE"].Value)
+                        ? mtc.Groups["STATE"].Value.Trim()
+                        : null;
+
+                    string idleTime = !string.IsNullOrWhiteSpace(mtc.Groups["IdleTime"].Value)
+                        ? mtc.Groups["IdleTime"].Value.Trim()
+                        : null;
+
+                    string logonTime = !string.IsNullOrWhiteSpace(mtc.Groups["LogonTime"].Value)
+                        ? mtc.Groups["LogonTime"].Value.Trim()
+                        : null;
+
+                    list.Add(new QUserObject(isCur, hostName, userName, sesn, state, id, idleTime, logonTime));
                 }
             }
             return list;
