@@ -13,7 +13,7 @@ namespace MG.QUserModule
     public class QUserHelper : WildcardMatcher, IQUserHelper
     {
         private const string QUSER_EXE = "quser.exe";
-        private const string REGEX_EXP = @"^(?<IsCurrent>\s|>)(?<UserName>[^\s]*)\s*(?<SessionName>rdp[^\s]*)?\s*(?<ID>\d*)\s*(?<STATE>[^\s]*)\s*(?<IdleTime>[^\s]*)\s*(?<LogonTime>.+)";
+        private const string REGEX_EXP = @"^(?<IsCurrent>\s|>)(?<UserName>[^\s]*)\s*(?<SessionName>[^\s]*)?\s*(?<ID>\d*)\s*(?<STATE>[^\s]*)\s*(?<IdleTime>[^\s]*)\s*(?<LogonTime>.+)";
 
         private static readonly string QUSER_PATH = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.System),
