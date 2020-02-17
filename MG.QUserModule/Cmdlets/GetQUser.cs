@@ -86,7 +86,7 @@ namespace MG.QUserModule.Cmdlets
                         taskList.Remove(t);
                     }
                 }
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
             }
             this.UpdateProgress(0);
             return final;

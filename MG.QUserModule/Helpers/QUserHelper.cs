@@ -77,8 +77,15 @@ namespace MG.QUserModule
 
                 }
                 string errLines = proc.StandardError.ReadToEnd();
-                if (!string.IsNullOrWhiteSpace(errLines) && !errLines.Contains("No User exists for *"))
-                    throw new InvalidOperationException(errLines);
+                //if (!string.IsNullOrWhiteSpace(errLines) && !errLines.Contains("No User exists for *"))
+                if (!string.IsNullOrWhiteSpace(errLines))
+                {
+                    if (errLines.Contains("Access is denied"))
+                        throw new UnauthorizedAccessException(errLines);
+
+                    else if (!errLines.Contains("No User exists for *"))
+                        throw new InvalidOperationException(errLines);
+                }
 
                 return list;
             }
