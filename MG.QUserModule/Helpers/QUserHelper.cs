@@ -133,66 +133,37 @@ namespace MG.QUserModule
         private void ParseOutput(string hostName, ref QUserResult result)
         {
             result.Users = new List<IQUserObject>(result.StandardOutput.Count);
-            for (int i = 0; i < result.StandardOutput.Count; i++)
+            if (!result.IsFaulted)
             {
-                string str = Regex.Replace(result.StandardOutput[i], "\\s{2,}", COMMA.ToString());
-                string[] split = str.Split(COMMA);
-
-                string output = this.CountSplit(str, split);
-
-                split = output.Split(COMMA);
-                bool isCurrent = false;
-
-                string idleTime = split[4];
-                string userName = split[0];
-                if (userName.StartsWith(COMMA.ToString()))
+                for (int i = 0; i < result.StandardOutput.Count; i++)
                 {
-                    userName = userName.Substring(1);
-                    isCurrent = true;
+                    string str = Regex.Replace(result.StandardOutput[i], "\\s{2,}", COMMA.ToString());
+                    string[] split = str.Split(COMMA);
+
+                    string output = this.CountSplit(str, split);
+
+                    split = output.Split(COMMA);
+                    bool isCurrent = false;
+
+                    string idleTime = split[4];
+                    string userName = split[0].Trim();
+                    if (userName.StartsWith(">"))
+                    {
+                        userName = userName.Substring(1);
+                        isCurrent = true;
+                    }
+                    string sessionName = split[1];
+                    int? id = null;
+                    if (int.TryParse(split[2], out int foundId))
+                        id = foundId;
+
+                    string state = split[3];
+                    string logonTime = split[5];
+
+                    result.Users.Add(new QUserObject(isCurrent, hostName, userName, sessionName, state, id, idleTime, logonTime));
                 }
-                string sessionName = split[1];
-                int? id = null;
-                if (int.TryParse(split[2], out int foundId))
-                    id = foundId;
-
-                string state = split[3];
-                string logonTime = split[5];
-
-                result.Users.Add(new QUserObject(isCurrent, hostName, userName, sessionName, state, id, idleTime, logonTime));
             }
         }
-        //private List<IQUserObject> ParseOutput(IReadOnlyList<string> strs, string hostName)
-        //{
-        //    var list = new List<IQUserObject>(strs.Count);
-        //    for (int i = 0; i < strs.Count; i++)
-        //    {
-        //        string str = Regex.Replace(strs[i], "\\s{2,}", COMMA.ToString());
-        //        string[] split = str.Split(COMMA);
-
-        //        string output = this.CountSplit(str, split);
-
-        //        split = output.Split(COMMA);
-        //        bool isCurrent = false;
-
-        //        string idleTime = split[4];
-        //        string userName = split[0];
-        //        if (userName.StartsWith(COMMA.ToString()))
-        //        {
-        //            userName = userName.Substring(1);
-        //            isCurrent = true;
-        //        }
-        //        string sessionName = split[1];
-        //        int? id = null;
-        //        if (int.TryParse(split[2], out int foundId))
-        //            id = foundId;
-
-        //        string state = split[3];
-        //        string logonTime = split[5];
-
-        //        list.Add(new QUserObject(isCurrent, hostName, userName, sessionName, state, id, idleTime, logonTime));
-        //    }
-        //    return list;
-        //}
 
         #endregion
 

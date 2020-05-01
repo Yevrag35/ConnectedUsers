@@ -4,7 +4,7 @@
         <View>
             <Name>QUserObject</Name>
             <ViewSelectedBy>
-                <TypeName>MG.QUserModule.Objects.QUserObject</TypeName>
+                <TypeName>MG.QUserModule.QUserObject</TypeName>
             </ViewSelectedBy>
             <TableControl>
 				<AutoSize/>

@@ -5,7 +5,7 @@ using System.Management.Automation;
 
 namespace MG.QUserModule.Cmdlets
 {
-    public abstract class ProgressCmdlet : BaseQCmdlet
+    public abstract class ProgressCmdlet : PSCmdlet
     {
         private const string COMPLETED = "Completed";
         protected private const double HUNDRED = 100d;
@@ -16,7 +16,7 @@ namespace MG.QUserModule.Cmdlets
         // NO PROGRESS PARAMETER
         private bool _noProgress;
         [Parameter(Mandatory = false)]
-        public SwitchParameter NoProgress
+        public virtual SwitchParameter NoProgress
         {
             get => _noProgress;
             set => _noProgress = value;
@@ -27,7 +27,7 @@ namespace MG.QUserModule.Cmdlets
         protected abstract ICollection<string> Items { get; }
         protected abstract int TotalCount { get; }
 
-        protected private void UpdateProgress(int id, int on)
+        protected virtual void UpdateProgress(int id, int on)
         {
             int realOn = this.TotalCount - on;
             var pr = new ProgressRecord(id, this.Activity, string.Format(
@@ -45,7 +45,7 @@ namespace MG.QUserModule.Cmdlets
         //    this.WriteTheProgress(pr, realOn);
         //}
 
-        protected private void UpdateProgress(int id)
+        protected virtual void UpdateProgress(int id)
         {
             if (!_noProgress)
             {

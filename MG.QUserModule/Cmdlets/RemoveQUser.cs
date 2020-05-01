@@ -18,15 +18,19 @@ namespace MG.QUserModule.Cmdlets
         private const string MULTI_STATUS_FORMAT = "{0} - {1}";
         private const string LH = "localhost";
         private QUserRemover Remover { get; set; }
-        private IWildcardMatcher Matcher => this.Remover;
+        //private IWildcardMatcher Matcher => this.Remover;
         private List<IQUserObject> _list;
-        private int TotalCount => _list.Count;
-
+        private int _tot;
+        protected override ICollection<string> Items => base.comps;
+        protected override string Activity => ACTIVITY;
+        protected override string StatusFormat => STATUS_FORMAT;
+        protected override int TotalCount => _tot;
 
         #region PARAMETERS
 
         [Parameter(Mandatory = true, ParameterSetName = "ViaPipeline", DontShow = true, ValueFromPipeline = true)]
-        public IQUserObject RemoteUserObject { get; set; }
+        [Alias("RemoteUserObject")]
+        public IQUserObject[] InputObject { get; set; }
 
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
@@ -36,36 +40,42 @@ namespace MG.QUserModule.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            if (this.MyInvocation.BoundParameters.ContainsKey("Force") &&
-                ((SwitchParameter)this.MyInvocation.BoundParameters["Force"]).ToBool() &&
-                this.MyInvocation.BoundParameters.ContainsKey("WhatIf") &&
-                ((SwitchParameter)this.MyInvocation.BoundParameters["WhatIf"]).ToBool())
-            {
-                throw new ArgumentException("'-WhatIf' cannot be combined with '-Force'!");
-            }
             this.Remover = new QUserRemover();
             _list = new List<IQUserObject>();
         }
 
         protected override void ProcessRecord()
         {
-            if (!this.ParameterSetName.Contains("Pipeline"))
+            if (this.ContainsParameter(x => x.InputObject))
             {
-                List<IQUserObject> objs = GetMultiQUserOutput(ComputerName, _helper);
-
-                if (this.ContainsParameter(x => x.UserName))
-                    _list.AddRange(base.FilterByUserName(objs, this.UserName, this.Matcher));
-
-                if (this.ContainsParameter(x => x.SessionName))
-                    _list.AddRange(base.FilterBySessionName(objs, this.SessionName));
-
-                if (this.ContainsParameter(x => x.SessionId))
-                    _list.AddRange(base.FilterBySessionId(objs, this.SessionId));
+                _list.AddRange(this.InputObject);
             }
+
             else
             {
-                _list.Add(this.RemoteUserObject);
+                if (this.ContainsParameter(x => x.ComputerName))
+                {
+
+                }
             }
+
+            //if (!this.ParameterSetName.Contains("Pipeline"))
+            //{
+            //    List<QUserResult> objs = GetMultiQUserOutput(ComputerName, _helper);
+
+            //    if (this.ContainsParameter(x => x.UserName))
+            //        _list.AddRange(base.FilterByUserName(objs, this.UserName, this.Matcher));
+
+            //    if (this.ContainsParameter(x => x.SessionName))
+            //        _list.AddRange(base.FilterBySessionName(objs, this.SessionName));
+
+            //    if (this.ContainsParameter(x => x.SessionId))
+            //        _list.AddRange(base.FilterBySessionId(objs, this.SessionId));
+            //}
+            //else
+            //{
+            //    _list.Add(this.RemoteUserObject);
+            //}
         }
 
         protected override void EndProcessing()
@@ -98,7 +108,7 @@ namespace MG.QUserModule.Cmdlets
             this.WriteProgress(pr);
         }
 
-        private void UpdateProgress(int id)     // Complete it!
+        protected override void UpdateProgress(int id)     // Complete it!
         {
             var pr = new ProgressRecord(id, ACTIVITY, COMPLETED)
             {
