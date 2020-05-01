@@ -43,11 +43,11 @@ namespace MG.QUserModule.Cmdlets
         protected private IEnumerable<IQUserObject> FilterBySessionId(IList<IQUserObject> list, int sessionId) =>
             list.Where(x => x.Id == sessionId);
 
-        public static List<IQUserObject> GetQUserOutput(string computerName, int timeoutInMs, IQUserHelper helper) =>
-            helper.RunQuery(computerName, timeoutInMs);
+        public static List<IQUserObject> GetQUserOutput(string computerName, IQUserHelper helper) =>
+            helper.RunQuery(computerName);
 
-        public static async Task<List<IQUserObject>> GetQUserOutputAsync(string computerName, int timeoutInMs, IQUserHelper helper) =>
-            await helper.RunQueryAsync(computerName, timeoutInMs);
+        public static async Task<List<IQUserObject>> GetQUserOutputAsync(string computerName, IQUserHelper helper) =>
+            await helper.RunQueryAsync(computerName);
 
         protected private void VerifyParameters()
         {

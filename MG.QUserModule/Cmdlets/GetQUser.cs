@@ -26,8 +26,8 @@ namespace MG.QUserModule.Cmdlets
             ValueFromPipeline = true)]
         public ADComputer InputObject { get; set; }
 
-        [Parameter(Mandatory = false)]
-        public int TimeoutInMs = 3000;
+        //[Parameter(Mandatory = false)]
+        //public int TimeoutInMs = 3000;
 
         protected override void BeginProcessing()
         {
@@ -51,7 +51,7 @@ namespace MG.QUserModule.Cmdlets
             List<IQUserObject> list = null;
             if (_tot == 1)
             {
-                list = GetQUserOutput(comps[0], this.TimeoutInMs, _helper);
+                list = GetQUserOutput(comps[0], _helper);
             }
             else
             {
@@ -97,7 +97,7 @@ namespace MG.QUserModule.Cmdlets
             IList<IQUserObject> objs = null;
             try
             {
-                objs = await GetQUserOutputAsync(computerName, this.TimeoutInMs, _helper);
+                objs = await GetQUserOutputAsync(computerName, _helper);
             }
             catch
             {

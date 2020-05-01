@@ -54,7 +54,7 @@ namespace MG.QUserModule.Cmdlets
         {
             if (!this.ParameterSetName.Contains("Pipeline"))
             {
-                IList<IQUserObject> objs = GetQUserOutput(ComputerName, this.TimeoutInMs, _helper);
+                IList<IQUserObject> objs = GetQUserOutput(ComputerName, _helper);
                 if (this.MyInvocation.BoundParameters.ContainsKey("UserName"))
                     _list.AddRange(base.FilterByUserName(objs, this.UserName, this.Matcher));
 
