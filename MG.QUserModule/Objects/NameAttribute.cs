@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Linq;
 
-namespace MG.QUserModule.Objects
+namespace MG.QUserModule
 {
     public class NameAttribute : Attribute, IAttribute
     {

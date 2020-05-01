@@ -1,4 +1,4 @@
-﻿using MG.QUserModule.Objects;
+﻿using MG.Posh.Extensions.Bound;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,9 +31,6 @@ namespace MG.QUserModule.Cmdlets
         [Parameter(Mandatory = false)]
         public SwitchParameter Force { get; set; }
 
-        [Parameter(Mandatory = false)]
-        public int TimeoutInMs = 3000;
-
         #endregion
 
         protected override void BeginProcessing()
@@ -54,14 +51,15 @@ namespace MG.QUserModule.Cmdlets
         {
             if (!this.ParameterSetName.Contains("Pipeline"))
             {
-                IList<IQUserObject> objs = GetQUserOutput(ComputerName, _helper);
-                if (this.MyInvocation.BoundParameters.ContainsKey("UserName"))
+                List<IQUserObject> objs = GetMultiQUserOutput(ComputerName, _helper);
+
+                if (this.ContainsParameter(x => x.UserName))
                     _list.AddRange(base.FilterByUserName(objs, this.UserName, this.Matcher));
 
-                if (this.MyInvocation.BoundParameters.ContainsKey("SessionName"))
+                if (this.ContainsParameter(x => x.SessionName))
                     _list.AddRange(base.FilterBySessionName(objs, this.SessionName));
 
-                if (this.MyInvocation.BoundParameters.ContainsKey("SessionId"))
+                if (this.ContainsParameter(x => x.SessionId))
                     _list.AddRange(base.FilterBySessionId(objs, this.SessionId));
             }
             else

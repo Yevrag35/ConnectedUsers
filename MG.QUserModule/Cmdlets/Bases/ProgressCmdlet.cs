@@ -13,6 +13,15 @@ namespace MG.QUserModule.Cmdlets
         protected private const ProgressRecordType REC_TYPE_COMPLETED = ProgressRecordType.Completed;
         protected private const int ROUND_DIGITS = 2;
 
+        // NO PROGRESS PARAMETER
+        private bool _noProgress;
+        [Parameter(Mandatory = false)]
+        public SwitchParameter NoProgress
+        {
+            get => _noProgress;
+            set => _noProgress = value;
+        }
+
         protected abstract string StatusFormat { get; }
         protected abstract string Activity { get; }
         protected abstract ICollection<string> Items { get; }
@@ -27,29 +36,35 @@ namespace MG.QUserModule.Cmdlets
             this.WriteTheProgress(pr, realOn);
         }
 
-        protected private void UpdateProgressAndName(int id, int on, string name)
-        {
-            int realOn = this.TotalCount - on;
-            var pr = new ProgressRecord(id, this.Activity, string.Format(
-                this.StatusFormat, realOn, this.TotalCount, name)
-            );
-            this.WriteTheProgress(pr, realOn);
-        }
+        //protected private void UpdateProgressAndName(int id, int on, string name)
+        //{
+        //    int realOn = this.TotalCount - on;
+        //    var pr = new ProgressRecord(id, this.Activity, string.Format(
+        //        this.StatusFormat, realOn, this.TotalCount, name)
+        //    );
+        //    this.WriteTheProgress(pr, realOn);
+        //}
 
         protected private void UpdateProgress(int id)
         {
-            var pr = new ProgressRecord(id, this.Activity, COMPLETED)
+            if (!_noProgress)
             {
-                RecordType = REC_TYPE_COMPLETED
-            };
-            WriteProgress(pr);
+                var pr = new ProgressRecord(id, this.Activity, COMPLETED)
+                {
+                    RecordType = REC_TYPE_COMPLETED
+                };
+                WriteProgress(pr);
+            }
         }
 
         private void WriteTheProgress(ProgressRecord pr, int on)
         {
-            double num = Math.Round(on / (double)Items.Count * HUNDRED, ROUND_DIGITS, MIDPOINT);
-            pr.PercentComplete = Convert.ToInt32(num);
-            base.WriteProgress(pr);
+            if (!_noProgress)
+            {
+                double num = Math.Round(on / (double)Items.Count * HUNDRED, ROUND_DIGITS, MIDPOINT);
+                pr.PercentComplete = Convert.ToInt32(num);
+                base.WriteProgress(pr);
+            }
         }
     }
 }

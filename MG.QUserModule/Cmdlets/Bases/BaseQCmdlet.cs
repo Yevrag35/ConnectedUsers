@@ -1,4 +1,4 @@
-﻿using MG.QUserModule.Objects;
+﻿using MG.Posh.Extensions.Bound;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace MG.QUserModule.Cmdlets
         protected private const string COMPUTERNAME = "COMPUTERNAME";
 
         [Parameter(Mandatory = false, ParameterSetName = "SpecifyComputerName", ValueFromPipeline = true)]
-        public string ComputerName = Environment.GetEnvironmentVariable(COMPUTERNAME);
+        public string[] ComputerName = new string[1] { Environment.GetEnvironmentVariable(COMPUTERNAME) };
 
         [Parameter(Mandatory = false)]
         public string UserName { get; set; }
@@ -43,22 +43,63 @@ namespace MG.QUserModule.Cmdlets
         protected private IEnumerable<IQUserObject> FilterBySessionId(IList<IQUserObject> list, int sessionId) =>
             list.Where(x => x.Id == sessionId);
 
-        public static List<IQUserObject> GetQUserOutput(string computerName, IQUserHelper helper) =>
-            helper.RunQuery(computerName);
+        public List<QUserResult> GetMultiQUserOutput(string[] computerNames, IQUserHelper helper)
+        {
+            var list = new List<QUserResult>(computerNames.Length);
+            foreach (string computerName in computerNames)
+            {
+                list.Add(GetQUserOutput(computerName, helper));
+            }
+            return list;
+        }
 
-        public static async Task<List<IQUserObject>> GetQUserOutputAsync(string computerName, IQUserHelper helper) =>
-            await helper.RunQueryAsync(computerName);
+        public QUserResult GetQUserOutput(string computerName, IQUserHelper helper)
+        {
+            //List<IQUserObject> retList = null;
+            QUserResult result = null;
+            try
+            {
+                result = helper.RunQuery(computerName);
+            }
+            catch (Exception e)
+            {
+                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.InvalidResult, computerName));
+                result = QUserResult.FromException(e);
+            }
+            return result;
+        }
+
+        public async Task<QUserResult> GetQUserOutputAsync(string computerName, IQUserHelper helper)
+        {
+            //List<IQUserObject> retList = null;
+            QUserResult result = null;
+            try
+            {
+                result = await helper.RunQueryAsync(computerName);
+            }
+            catch (Exception e)
+            {
+                base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.InvalidResult, computerName));
+                result = QUserResult.FromException(e);
+            }
+            return result;
+        }
 
         protected private void VerifyParameters()
         {
-            bool check = (this.MyInvocation.BoundParameters.ContainsKey("UserName") &&
-                this.MyInvocation.BoundParameters.ContainsKey("SessionName")) || (
-                this.MyInvocation.BoundParameters.ContainsKey("UserName") &&
-                this.MyInvocation.BoundParameters.ContainsKey("SessionId")) ||
-                (this.MyInvocation.BoundParameters.ContainsKey("SessionName") &&
-                this.MyInvocation.BoundParameters.ContainsKey("SessionId"));
-            if (check)
+            //bool check = (this.MyInvocation.BoundParameters.ContainsKey("UserName") &&
+            //    this.MyInvocation.BoundParameters.ContainsKey("SessionName")) || (
+            //    this.MyInvocation.BoundParameters.ContainsKey("UserName") &&
+            //    this.MyInvocation.BoundParameters.ContainsKey("SessionId")) ||
+            //    (this.MyInvocation.BoundParameters.ContainsKey("SessionName") &&
+            //    this.MyInvocation.BoundParameters.ContainsKey("SessionId"));
+
+            if ((this.ContainsParameter(x => x.UserName) &&
+                this.ContainsAnyParameters(x => x.SessionName, x => x.SessionId))
+                || this.ContainsAllParameters(x => x.SessionId, x => x.SessionName))
+            {
                 throw new ArgumentException("You must only specify a UserName, SessionName, or SessionId!");
+            }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using MG.QUserModule.Objects;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Management.Automation;
 using System.Reflection;

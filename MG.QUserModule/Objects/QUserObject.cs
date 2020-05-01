@@ -3,7 +3,7 @@ using System.Collections;
 using System.Linq;
 using System.Reflection;
 
-namespace MG.QUserModule.Objects
+namespace MG.QUserModule
 {
     public class QUserObject : IQUserObject
     {

@@ -1,5 +1,5 @@
-﻿using MG.QUserModule.Objects;
-using Microsoft.ActiveDirectory.Management;
+﻿using MG.Posh.Extensions.Bound;
+//using Microsoft.ActiveDirectory.Management;
 using System;
 using System.Collections.Generic;
 using System.Management.Automation;
@@ -15,7 +15,8 @@ namespace MG.QUserModule.Cmdlets
     public class GetQUser : ProgressCmdlet
     {
         private const string DNS_HOSTNAME = "DNSHostName";
-        private List<string> comps;
+        //private List<string> comps;
+        private ComputerCollection comps;
         private int _tot;
         protected override string Activity => "Logged On User Query";
         protected override ICollection<string> Items => comps;
@@ -24,7 +25,8 @@ namespace MG.QUserModule.Cmdlets
 
         [Parameter(Mandatory = true, ParameterSetName = "ByADComputerPipeline", DontShow = true,
             ValueFromPipeline = true)]
-        public ADComputer InputObject { get; set; }
+        public PSObject InputObject { get; set; }
+        //public ADComputer InputObject { get; set; }
 
         //[Parameter(Mandatory = false)]
         //public int TimeoutInMs = 3000;
@@ -32,35 +34,60 @@ namespace MG.QUserModule.Cmdlets
         protected override void BeginProcessing()
         {
             base.BeginProcessing();
-            comps = new List<string>();
+            comps = new ComputerCollection();
         }
 
         protected override void ProcessRecord()
         {
-            string compStr = ComputerName;
-            if (this.ParameterSetName == "ByADComputerPipeline")
+            if (this.ContainsParameter(x => x.ComputerName))
             {
-                compStr = this.InputObject.DNSHostName;
+                comps.UnionWith(this.ComputerName);
             }
-            comps.Add(compStr);
+
+            if (this.ContainsParameter(x => x.InputObject))
+            {
+                string compStr = null;
+                foreach (PSPropertyInfo psProp in this.InputObject.Properties)
+                {
+                    if (psProp.Name.Equals("DnsHostName", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        compStr = psProp.Value as string;
+                        break;
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(compStr))
+                {
+                    comps.Add(compStr);
+                }
+            }
+            
         }
 
         protected override void EndProcessing()
         {
             _tot = comps.Count;
             List<IQUserObject> list = null;
-            if (_tot == 1)
+            if (comps.Count == 1)
             {
-                list = GetQUserOutput(comps[0], _helper);
+                try
+                {
+                    list = GetQUserOutput(comps[0], _helper);
+                }
+                catch (Exception e)
+                {
+                    base.WriteError(new ErrorRecord(e, e.GetType().FullName, ErrorCategory.NotSpecified, comps[0]));
+                }
             }
-            else
+            else if (comps.Count > 1)
             {
                 list = this.Execute();
             }
+            
             WriteObject(list, true);
         }
 
-        protected private List<IQUserObject> Execute()
+        protected private List<IQUserObject> Execute(bool noProgress = false)
         {
             var taskList = new List<Task<IEnumerable<IQUserObject>>>();
             var final = new List<IQUserObject>();
@@ -72,7 +99,10 @@ namespace MG.QUserModule.Cmdlets
 
             while (taskList.Count > 0)
             {
-                this.UpdateProgress(0, taskList.Count);
+                //if (!noProgress)
+                //{
+                    this.UpdateProgress(0, taskList.Count);
+                //}
                 for (int i = taskList.Count - 1; i >= 0; i--)
                 {
                     Task<IEnumerable<IQUserObject>> t = taskList[i];
@@ -86,9 +116,12 @@ namespace MG.QUserModule.Cmdlets
                         taskList.Remove(t);
                     }
                 }
-                Thread.Sleep(500);
+                Thread.Sleep(100);
             }
-            this.UpdateProgress(0);
+            //if (!noProgress)
+            //{
+                this.UpdateProgress(0);
+            //}
             return final;
         }
 

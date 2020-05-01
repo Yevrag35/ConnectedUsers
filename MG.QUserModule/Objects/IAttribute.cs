@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MG.QUserModule.Objects
+namespace MG.QUserModule
 {
     public interface IAttribute
     {
