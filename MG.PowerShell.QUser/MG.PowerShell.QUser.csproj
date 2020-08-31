@@ -31,8 +31,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MG.Posh.Extensions, Version=1.4.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MG.Posh.Extensions.1.4.0\lib\net452\MG.Posh.Extensions.dll</HintPath>
+    <Reference Include="MG.Posh.Extensions, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MG.Posh.Extensions.1.4.1\lib\net452\MG.Posh.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
