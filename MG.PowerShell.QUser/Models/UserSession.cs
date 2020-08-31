@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.PowerShell.QUser.Executor;
+using System;
 using System.Collections.Generic;
 
 namespace MG.PowerShell.QUser.Models
@@ -60,6 +61,31 @@ namespace MG.PowerShell.QUser.Models
         internal void SetUserName(string userName)
         {
             this.UserName = userName.Trim();
+        }
+
+        public static explicit operator LogoffParameter(UserSession session)
+        {
+            var lp = new LogoffParameter();
+            if (!Environment.GetEnvironmentVariable("COMPUTERNAME").Equals(session.HostName))
+            {
+                lp.ServerName = session.HostName;
+            }
+            if (session.Id.HasValue)
+                lp.SessionId = session.Id.Value;
+
+            else
+                lp.SessionName = session.SessionName;
+
+            return lp;
+        }
+        public static LogoffParameter[] ToLogoff(UserSession[] sessions)
+        {
+            var array = new LogoffParameter[sessions.Length];
+            for (int i = 0; i < sessions.Length; i++)
+            {
+                array[i] = (LogoffParameter)sessions[i];
+            }
+            return array;
         }
     }
 }

@@ -47,6 +47,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets\GetConnectedUser.cs" />
+    <Compile Include="Cmdlets\RemoveConnectedUser.cs" />
+    <Compile Include="Executor\ExecutorBase.cs" />
+    <Compile Include="Executor\IParameterBuilder.cs" />
+    <Compile Include="Executor\LogoffExecutor.cs" />
+    <Compile Include="Executor\LogoffParameter.cs" />
     <Compile Include="Executor\QUserExecutor.cs" />
     <Compile Include="Executor\QUserParameter.cs" />
     <Compile Include="Models\Enums.cs" />

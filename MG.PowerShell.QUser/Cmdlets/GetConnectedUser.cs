@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
 
-namespace MG.PowerShell.QUser.Cmdlets
+namespace MG.PowerShell.QUser
 {
     [Cmdlet(VerbsCommon.Get, "ConnectedUser", DefaultParameterSetName = "None")]
     [Alias("Get-QUser")]
@@ -62,12 +62,12 @@ namespace MG.PowerShell.QUser.Cmdlets
             if (executor.Execute(_parameter))
             {
                 var lineParser = new LineParser();
-                lineParser.ParseHeaderLine(executor.UserLines[0]);
+                lineParser.ParseHeaderLine(executor.StandardLines[0]);
 
-                for (int i = 1; i < executor.UserLines.Count; i++)
+                for (int i = 1; i < executor.StandardLines.Count; i++)
                 {
-                    string line = executor.UserLines[i];
-                    bool isCurrent = !line.StartsWith(">") ? false : true;
+                    string line = executor.StandardLines[i];
+                    bool isCurrent = line.StartsWith(">");
 
                     UserSession session = lineParser.ParseUserLine(line, isCurrent);
                     if (!this.ContainsParameter(x => x.ComputerName))
