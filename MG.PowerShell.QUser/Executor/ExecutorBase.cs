@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MG.PowerShell.QUser.Executor
 {
-    public abstract class ExecutorBase
+    public abstract class ExecutorBase : IExecutor
     {
         public abstract string ExePath { get; }
         public IList<string> ErrorLines { get; }
@@ -57,6 +57,13 @@ namespace MG.PowerShell.QUser.Executor
                 UseShellExecute = false
             };
         }
-        protected abstract void ProcessErrorLine(string line);
+        protected virtual void ProcessErrorLine(string line)
+        {
+        }
+        public virtual void Reset()
+        {
+            this.ErrorLines.Clear();
+            this.StandardLines.Clear();
+        }
     }
 }

@@ -7,9 +7,6 @@ namespace MG.PowerShell.QUser.Executor
 {
     public class LogoffParameter : IParameterBuilder
     {
-        private const string SERVER_PARAM = "/server:";
-        private const string VERBOSE = "/V";
-        private const char SPACE = (char)32;
 
         private StringBuilder _builder;
 
@@ -34,18 +31,18 @@ namespace MG.PowerShell.QUser.Executor
             if (!string.IsNullOrEmpty(this.ServerName))
             {
                 if (_builder.Length > 0)
-                    _builder.Append(SPACE);
+                    _builder.Append(Constants.SPACE);
 
-                _builder.Append(SERVER_PARAM);
+                _builder.Append(Constants.SERVER_PARAM);
                 _builder.Append(this.ServerName);
             }
 
             if (this.Verbose)
             {
                 if (_builder.Length > 0)
-                    _builder.Append(SPACE);
+                    _builder.Append(Constants.SPACE);
 
-                _builder.Append(VERBOSE);
+                _builder.Append(Constants.VERBOSE);
             }
 
             string result = _builder.ToString();

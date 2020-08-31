@@ -8,14 +8,12 @@ namespace MG.PowerShell.QUser.Executor
 {
     public class LogoffExecutor : ExecutorBase
     {
+        private const string PATH_FORMAT = "{0}\\logoff.exe";
         public override string ExePath { get; }
 
         public LogoffExecutor()
         {
-            this.ExePath = string.Format("{0}\\logoff.exe", Environment.GetFolderPath(Environment.SpecialFolder.System));
-        }
-        protected override void ProcessErrorLine(string line)
-        {
+            this.ExePath = string.Format(PATH_FORMAT, Environment.GetFolderPath(Environment.SpecialFolder.System));
         }
     }
 }

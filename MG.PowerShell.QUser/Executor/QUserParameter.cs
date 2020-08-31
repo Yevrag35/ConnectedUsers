@@ -5,9 +5,6 @@ namespace MG.PowerShell.QUser.Executor
 {
     public class QUserParameter : IParameterBuilder
     {
-        private const string SERVER_PARAM = "/server:";
-        private const char SPACE = (char)32;
-
         private StringBuilder _builder;
 
         public string ServerName { get; set; }
@@ -46,9 +43,9 @@ namespace MG.PowerShell.QUser.Executor
             if (!string.IsNullOrEmpty(this.ServerName))
             {
                 if (_builder.Length > 0)
-                    _builder.Append(SPACE);
+                    _builder.Append(Constants.SPACE);
 
-                _builder.Append(SERVER_PARAM);
+                _builder.Append(Constants.SERVER_PARAM);
                 _builder.Append(this.ServerName);
             }
 

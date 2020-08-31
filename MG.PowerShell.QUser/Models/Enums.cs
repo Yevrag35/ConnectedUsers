@@ -15,15 +15,18 @@ namespace MG.PowerShell.QUser.Models
 
     public static class EnumFactory
     {
+        private const string ACTIVE = "Active";
+        private const string DISCONNECTED = "Disc";
+
         public static SessionState GetSessionState(string possibleState)
         {
             if (string.IsNullOrEmpty(possibleState))
                 return SessionState.Unknown;
 
-            if (possibleState.StartsWith("Active", StringComparison.InvariantCultureIgnoreCase))
+            if (possibleState.StartsWith(ACTIVE, StringComparison.InvariantCultureIgnoreCase))
                 return SessionState.Active;
 
-            else if (possibleState.StartsWith("Disc", StringComparison.InvariantCultureIgnoreCase))
+            else if (possibleState.StartsWith(DISCONNECTED, StringComparison.InvariantCultureIgnoreCase))
                 return SessionState.Disconnected;
 
             else

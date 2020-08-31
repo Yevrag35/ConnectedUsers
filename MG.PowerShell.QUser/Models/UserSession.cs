@@ -66,7 +66,7 @@ namespace MG.PowerShell.QUser.Models
         public static explicit operator LogoffParameter(UserSession session)
         {
             var lp = new LogoffParameter();
-            if (!Environment.GetEnvironmentVariable("COMPUTERNAME").Equals(session.HostName))
+            if (!Environment.GetEnvironmentVariable(Constants.ENV_COMPUTER_NAME).Equals(session.HostName))
             {
                 lp.ServerName = session.HostName;
             }

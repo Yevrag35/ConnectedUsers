@@ -20,8 +20,14 @@ namespace MG.PowerShell.QUser.Executor
 
         protected override void ProcessErrorLine(string line)
         {
-            if (line.StartsWith("No User exists", StringComparison.InvariantCultureIgnoreCase))
+            if (line.StartsWith(Constants.NO_USER_EXISTS, StringComparison.InvariantCultureIgnoreCase))
                 this.NoUserExists = true;
+        }
+
+        public override void Reset()
+        {
+            this.NoUserExists = false;
+            base.Reset();
         }
     }
 }

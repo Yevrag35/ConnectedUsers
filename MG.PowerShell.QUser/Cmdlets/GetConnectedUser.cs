@@ -52,9 +52,6 @@ namespace MG.PowerShell.QUser
         #endregion
 
         #region CMDLET PROCESSING
-        protected override void BeginProcessing()
-        {
-        }
 
         protected override void ProcessRecord()
         {
@@ -67,7 +64,7 @@ namespace MG.PowerShell.QUser
                 for (int i = 1; i < executor.StandardLines.Count; i++)
                 {
                     string line = executor.StandardLines[i];
-                    bool isCurrent = line.StartsWith(">");
+                    bool isCurrent = line.StartsWith(Constants.GREATER_THAN);
 
                     UserSession session = lineParser.ParseUserLine(line, isCurrent);
                     if (!this.ContainsParameter(x => x.ComputerName))
@@ -101,7 +98,7 @@ namespace MG.PowerShell.QUser
         #region BACKEND METHODS
         private string GetLocalHostName()
         {
-            return Environment.GetEnvironmentVariable("COMPUTERNAME");
+            return Environment.GetEnvironmentVariable(Constants.ENV_COMPUTER_NAME);
         }
 
         #endregion
