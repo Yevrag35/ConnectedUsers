@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.271
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MG.QUserModule", "MG.QUserModule\MG.QUserModule.csproj", "{F48F0D29-09B1-4809-8CEC-171632244A13}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MG.PowerShell.QUser", "MG.PowerShell.QUser\MG.PowerShell.QUser.csproj", "{5B72AC2D-2A26-4E37-958C-018623A5C8D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{F48F0D29-09B1-4809-8CEC-171632244A13}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F48F0D29-09B1-4809-8CEC-171632244A13}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F48F0D29-09B1-4809-8CEC-171632244A13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5B72AC2D-2A26-4E37-958C-018623A5C8D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B72AC2D-2A26-4E37-958C-018623A5C8D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B72AC2D-2A26-4E37-958C-018623A5C8D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B72AC2D-2A26-4E37-958C-018623A5C8D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
