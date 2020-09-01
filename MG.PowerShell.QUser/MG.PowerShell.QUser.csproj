@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Cmdlets\GetConnectedUser.cs" />
     <Compile Include="Cmdlets\RemoveConnectedUser.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Executor\ExecutorBase.cs" />
     <Compile Include="Executor\IExecutor.cs" />
     <Compile Include="Executor\IParameterBuilder.cs" />
