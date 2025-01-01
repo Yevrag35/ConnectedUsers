@@ -1,0 +1,51 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"name": "QUserModule"
+		}
+	],
+	"settings": {
+		"terminal.explorerKind": "integrated",
+		"powershell.powerShellDefaultVersion": "Windows PowerShell (x64)",
+		"powershell.debugging.createTemporaryIntegratedConsole": false,
+		"powershell.enableProfileLoading": false,
+		"dotnet.preferCSharpExtension": true
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"label": "Build",
+				"type": "shell",
+				"command": "& ${workspaceFolder:QUserModule}\\.build\\build.ps1",
+				"problemMatcher": [],
+				"promptOnClose": true,
+				"presentation": {
+					"echo": true,
+					"reveal": "silent",
+					"focus": false,
+					"panel": "shared",
+					"showReuseMessage": false,
+					"clear": false
+				},
+				"group": {
+					"kind": "build",
+					"isDefault": true
+				}
+			}
+		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "PowerShell: Launch Script",
+				"type": "PowerShell",
+				"request": "launch",
+				"script": "${workspaceFolder:QUserModule}\\.debug\\debug.ps1",
+				"cwd": "${workspaceFolder:QUserModule}"
+			}
+		]
+	}
+}
