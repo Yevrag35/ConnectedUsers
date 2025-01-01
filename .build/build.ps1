@@ -17,7 +17,13 @@ Set-Content -Path "$PSScriptRoot\..\Module\ConnectedUsers.psm1" -Value $builder.
 # Build DotNet Project
 dotnet build "$PSScriptRoot\..\QUserModule.sln" -c Release
 
-foreach ($dll in $(Get-ChildItem -Path "$PSScriptRoot\..\MG.QUser.Core\bin\Release\netstandard2.0-windows" -Filter *.dll -Recurse)) {
+$copyToRoot = "$PSScriptRoot\..\Module\assemblies"
+foreach ($dll in $(Get-ChildItem -Path "$PSScriptRoot\..\MG.QUser.Core\bin\Release" -Filter *.dll -Recurse)) {
 
-    $dll | Copy-Item -Destination "$PSScriptRoot\..\Module\assemblies" -Force
+    $parent = [System.IO.Path]::GetDirectoryName($dll.FullName)
+    $parentName = Split-Path -Path $parent -Leaf
+    Write-Host $parentName
+    $copyTo = "$copyToRoot\$($parentName.Replace('-windows', '').Replace('.', '').Replace('framework', ''))"
+    New-Item -Path $copyTo -ItemType Directory -ea 0 | Out-Null
+    $dll | Copy-Item -Destination $copyTo -Force
 }
