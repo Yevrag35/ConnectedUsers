@@ -1,4 +1,5 @@
 ﻿using MG.QUser.Core.Internal;
+using MG.QUser.Core.Internal.Native;
 using MG.QUser.Core.Internal.Structs;
 using System;
 using System.ComponentModel;
@@ -11,29 +12,6 @@ namespace MG.QUser.Core;
 
 public static partial class QUserHelper
 {
-    // P/Invoke for WTSEnumerateSessions
-    [DllImport("wtsapi32.dll", SetLastError = true)]
-    private static extern bool WTSEnumerateSessions(
-        IntPtr hServer,
-        int Reserved,
-        int Version,
-        out IntPtr ppSessionInfo,
-        out int pCount);
-
-    // P/Invoke for WTSFreeMemory
-    [DllImport("wtsapi32.dll", SetLastError = true)]
-    private static extern void WTSFreeMemory(IntPtr pMemory);
-
-    // P/Invoke for WTSQuerySessionInformation
-    [DllImport("wtsapi32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
-    private static extern bool WTSQuerySessionInformation(
-        IntPtr hServer,
-        int sessionId,
-        WtsInfoClass wtsInfoClass,
-        out IntPtr ppBuffer,
-        out int pBytesReturned
-    );
-
     /// <summary>
     /// Enumerates and returns a collection of session information from the local machine.
     /// </summary>
@@ -58,10 +36,10 @@ public static partial class QUserHelper
 
         WtsSessionInfo[] sessionList = [];
 
-        WtsSessionHandle session = WtsSessionHandle.OpenConnection(computerName);
+        using SafeWtsSessionHandle session = SafeWtsSessionHandle.OpenConnection(computerName);
         try
         {
-            bool result = WTSEnumerateSessions(session,
+            bool result = WTSApi32.WTSEnumerateSessions(session,
                 Reserved: 0,
                 Version: 1,  // Usually is 1.
                 out pSessions,
@@ -85,23 +63,21 @@ public static partial class QUserHelper
 
             for (int i = 0; i < count; i++)
             {
-                AddSessionInfo(sessionList, ref session, ref i, ref current, ref dataSize);
+                AddSessionInfo(sessionList, session, ref i, ref current, ref dataSize);
             }
         }
         finally
         {
             if (IntPtr.Zero != pSessions)
             {
-                WTSFreeMemory(pSessions);
+                WTSApi32.WTSFreeMemory(pSessions);
             }
-
-            session.Dispose();
         }
 
         return sessionList;
     }
 
-    private static void AddSessionInfo(WtsSessionInfo[] sessionList, ref WtsSessionHandle handle, ref int index, ref long current, ref long dataSize)
+    private static void AddSessionInfo(WtsSessionInfo[] sessionList, SafeWtsSessionHandle handle, ref int index, ref long current, ref long dataSize)
     {
         // Marshal the current pointer to a WTS_SESSION_INFO struct.
         WTS_SESSION_INFO sessionInfo = MarshalHelper.PtrToStruct<WTS_SESSION_INFO>((IntPtr)current);
@@ -109,7 +85,7 @@ public static partial class QUserHelper
         IntPtr buffer = IntPtr.Zero;
         try
         {
-            bool success = WTSQuerySessionInformation(
+            bool success = WTSApi32.WTSQuerySessionInformation(
                 handle,
                 sessionInfo.SessionId,
                 WtsInfoClass.WTSSessionInfo,
@@ -123,9 +99,9 @@ public static partial class QUserHelper
             }
 
             WTSINFO wtsInfo = MarshalHelper.PtrToStruct<WTSINFO>(buffer);
-            string userName = QuerySessionInfoString(ref sessionInfo.SessionId, ref handle, WtsInfoClass.WTSUserName);
-            string domainName = QuerySessionInfoString(ref sessionInfo.SessionId, ref handle, WtsInfoClass.WTSDomainName);
-            string clientName = QuerySessionInfoString(ref sessionInfo.SessionId, ref handle, WtsInfoClass.WTSClientName);
+            string userName = QuerySessionInfoString(ref sessionInfo.SessionId, handle, WtsInfoClass.WTSUserName);
+            string domainName = QuerySessionInfoString(ref sessionInfo.SessionId, handle, WtsInfoClass.WTSDomainName);
+            string clientName = QuerySessionInfoString(ref sessionInfo.SessionId, handle, WtsInfoClass.WTSClientName);
 
             ref long currentTime = ref wtsInfo.CurrentTime;
 
@@ -153,7 +129,7 @@ public static partial class QUserHelper
 
             if (buffer != IntPtr.Zero)
             {
-                WTSFreeMemory(buffer);
+                WTSApi32.WTSFreeMemory(buffer);
             }
         }
     }
