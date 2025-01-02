@@ -1,6 +1,4 @@
-﻿using MG.QUser.Core.Internal.Structs;
-using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System;
 using System.Runtime.InteropServices;
 
 namespace MG.QUser.Core.Internal;

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Runtime.InteropServices;
 
 namespace MG.QUser.Core.Internal.Structs;
 
@@ -12,7 +9,7 @@ namespace MG.QUser.Core.Internal.Structs;
 /// If you want the Unicode (WTSINFOW), adjust CharSet and string field sizes accordingly.
 /// </summary>
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-internal struct WTSINFOW
+internal struct WTSINFO
 {
     public WtsConnectState State;
     public int SessionId;

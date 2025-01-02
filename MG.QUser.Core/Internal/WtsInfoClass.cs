@@ -6,7 +6,7 @@ namespace MG.QUser.Core.Internal;
 /// Contains values that indicate the type of session information to retrieve in a call to the <c>WTSQuerySessionInformation</c> function.
 /// </summary>
 /// <remarks>
-/// See <see href="https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/ne-wtsapi32-wts_info_class"/>
+/// See <see href="https://learn.microsoft.com/en-us/windows/win32/api/wtsapi32/ne-wtsapi32-wts_info_class">WTS_INFO_CLASS</see>.
 /// </remarks>
 public enum WtsInfoClass
 {

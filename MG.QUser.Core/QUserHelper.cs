@@ -1,9 +1,8 @@
 ﻿using MG.QUser.Core.Internal;
 using MG.QUser.Core.Internal.Structs;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace MG.QUser.Core;
@@ -40,6 +39,7 @@ public static partial class QUserHelper
     /// </summary>
     /// <returns>A list of session information objects.</returns>
     /// <exception cref="Win32Exception"/>
+    [DebuggerStepThrough]
     public static WtsSessionInfo[] GetAllSessions()
     {
         return GetAllSessions(computerName: null);
@@ -55,7 +55,6 @@ public static partial class QUserHelper
     {
         IntPtr pSessions = IntPtr.Zero;
         int count = 0;
-
 
         WtsSessionInfo[] sessionList = [];
 
@@ -86,7 +85,7 @@ public static partial class QUserHelper
 
             for (int i = 0; i < count; i++)
             {
-                AddSessionInfo(sessionList, ref session, in i, ref current, in dataSize);
+                AddSessionInfo(sessionList, ref session, ref i, ref current, ref dataSize);
             }
         }
         finally
@@ -102,10 +101,10 @@ public static partial class QUserHelper
         return sessionList;
     }
 
-    private static void AddSessionInfo(WtsSessionInfo[] sessionList, ref WtsSessionHandle handle, in int index, ref long current, in long dataSize)
+    private static void AddSessionInfo(WtsSessionInfo[] sessionList, ref WtsSessionHandle handle, ref int index, ref long current, ref long dataSize)
     {
         // Marshal the current pointer to a WTS_SESSION_INFO struct.
-        WTS_SESSION_INFO sessionInfo = Marshal.PtrToStructure<WTS_SESSION_INFO>((IntPtr)current);
+        WTS_SESSION_INFO sessionInfo = MarshalHelper.PtrToStruct<WTS_SESSION_INFO>((IntPtr)current);
 
         IntPtr buffer = IntPtr.Zero;
         try
@@ -118,17 +117,17 @@ public static partial class QUserHelper
                 out int bytesReturned
             );
 
-            if (!success || IntPtr.Zero == buffer || bytesReturned < Marshal.SizeOf(typeof(WTSINFOW)))
+            if (!success || IntPtr.Zero == buffer || bytesReturned < Marshal.SizeOf(typeof(WTSINFO)))
             {
                 return;
             }
 
-            WTSINFOW wtsInfo = Marshal.PtrToStructure<WTSINFOW>(buffer);
+            WTSINFO wtsInfo = MarshalHelper.PtrToStruct<WTSINFO>(buffer);
             string userName = QuerySessionInfoString(ref sessionInfo.SessionId, ref handle, WtsInfoClass.WTSUserName);
             string domainName = QuerySessionInfoString(ref sessionInfo.SessionId, ref handle, WtsInfoClass.WTSDomainName);
             string clientName = QuerySessionInfoString(ref sessionInfo.SessionId, ref handle, WtsInfoClass.WTSClientName);
 
-            long currentTime = wtsInfo.CurrentTime;
+            ref long currentTime = ref wtsInfo.CurrentTime;
 
             sessionList[index] = new WtsSessionInfo
             {

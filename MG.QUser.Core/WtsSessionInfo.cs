@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 #nullable enable
 
@@ -24,7 +22,7 @@ public sealed class WtsSessionInfo : IComparable<WtsSessionInfo>
     /// </summary>
     public string? ClientName { get; set; }
 
-    public string ComputerName { get; set; } = Environment.MachineName;
+    public string ComputerName { get; set; } = string.Empty;
 
     /// <summary>
     /// The user's domain name (if any).
@@ -52,15 +50,6 @@ public sealed class WtsSessionInfo : IComparable<WtsSessionInfo>
 
     public int CompareTo(WtsSessionInfo? other)
     {
-        return this.SessionId.CompareTo(other?.SessionId);
-    }
-
-    public override string ToString()
-    {
-        return $"[Session ID: {this.SessionId}, " +
-               $"WinStation: {this.WinStationName}, " +
-               $"State: {this.State}, " +
-               $"User: {this.DomainName}\\{this.UserName}, " +
-               $"Client: {this.ClientName}]";
+        return other is null ? -1 : this.SessionId.CompareTo(other.SessionId);
     }
 }

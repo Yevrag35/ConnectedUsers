@@ -17,5 +17,5 @@ public enum WtsConnectState
     Listening,
     Reset,
     Down,
-    Init
+    Init,
 }

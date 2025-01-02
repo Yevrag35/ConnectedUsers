@@ -12,11 +12,11 @@ internal ref struct WtsSessionHandle
     private string? _computerName;
     private IntPtr _handle;
 
-    public readonly string ComputerName => _computerName ?? Environment.MachineName;
+    public readonly string ComputerName => _computerName ?? GetEnvironmentMachineName();
     public readonly IntPtr Handle => _handle;
     private WtsSessionHandle(IntPtr handle, string? computerName)
     {
-        _computerName = (computerName ?? Environment.MachineName).ToUpperInvariant();
+        _computerName = (computerName ?? GetEnvironmentMachineName()).ToUpperInvariant();
         _handle = handle;
     }
     public void Dispose()
@@ -29,10 +29,40 @@ internal ref struct WtsSessionHandle
             WTSCloseServer(handle);
         }
     }
+
+    private static string? _machineName;
+    private static string GetEnvironmentMachineName()
+    {
+#if !NETSTANDARD1_1
+        return _machineName ??= Environment.MachineName;
+    }
+#else
+        if (string.IsNullOrEmpty(_machineName))
+        {
+            uint uLength = MAX_COMPUTERNAME_LENGTH;
+            unsafe
+            {
+                char* buffer = stackalloc char[(int)uLength];
+
+                _machineName = GetComputerName(buffer, &uLength)
+                    ? new string(buffer, 0, (int)uLength)
+                    : string.Empty;
+            }
+        }
+
+        return _machineName!;
+    }
+    
+    private const uint MAX_COMPUTERNAME_LENGTH = 15;
+
+    [DllImport("Kernel32.dll", CharSet = CharSet.Unicode)]
+    private static extern unsafe bool GetComputerName(char* lpBuffer, uint* nSize);
+#endif
+
     private static bool IsLocalHost([NotNullWhen(false)] string? computerName)
     {
         return string.IsNullOrWhiteSpace(computerName)
-            || computerName!.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase)
+            || computerName!.Equals(GetEnvironmentMachineName(), StringComparison.OrdinalIgnoreCase)
             || computerName.Equals("localhost", StringComparison.OrdinalIgnoreCase)
             || computerName.Equals(".", StringComparison.Ordinal);
     }
@@ -40,7 +70,7 @@ internal ref struct WtsSessionHandle
     {
         if (IsLocalHost(computerName))
         {
-            return new WtsSessionHandle(MemoryHelper.WTS_CURRENT_SERVER_HANDLE, Environment.MachineName);
+            return new WtsSessionHandle(MemoryHelper.WTS_CURRENT_SERVER_HANDLE, GetEnvironmentMachineName());
         }
 
         IntPtr serverHandle = WTSOpenServer(computerName);
@@ -56,4 +86,6 @@ internal ref struct WtsSessionHandle
     // WTSCloseServer closes that handle
     [DllImport("wtsapi32.dll", SetLastError = true)]
     private static extern void WTSCloseServer(IntPtr hServer);
+
+    
 }
