@@ -1,4 +1,5 @@
 ﻿using MG.QUser.Core.Internal;
+using MG.QUser.Core.Internal.Handles;
 using MG.QUser.Core.Internal.Native;
 using MG.QUser.Core.Internal.Structs;
 using System;
@@ -32,105 +33,80 @@ public static partial class QUserHelper
     public static WtsSessionInfo[] GetAllSessions(string? computerName)
     {
         IntPtr pSessions = IntPtr.Zero;
-        int count = 0;
 
         WtsSessionInfo[] sessionList = [];
 
-        using SafeWtsSessionHandle session = SafeWtsSessionHandle.OpenConnection(computerName);
-        try
+        using WtsSessionSafeHandle session = WtsSessionSafeHandle.OpenConnection(computerName);
+        using WtsSessionArraySafeHandle sessionArray = WTSApi32.WTSEnumerateSessions(session);
+
+        if (!sessionArray.Result)
         {
-            bool result = WTSApi32.WTSEnumerateSessions(session,
-                Reserved: 0,
-                Version: 1,  // Usually is 1.
-                out pSessions,
-                out count);
-
-            if (!result)
-            {
-                throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
-
-            if (count == 0)
-            {
-                return sessionList;
-            }
-
-            sessionList = new WtsSessionInfo[count];
-
-            // Each session is a block of memory (WTS_SESSION_INFO).
-            long dataSize = Marshal.SizeOf(typeof(WTS_SESSION_INFO));
-            long current = pSessions.ToInt64();
-
-            for (int i = 0; i < count; i++)
-            {
-                AddSessionInfo(sessionList, session, ref i, ref current, ref dataSize);
-            }
+            return sessionList;
         }
-        finally
+
+        sessionList = new WtsSessionInfo[sessionArray.Count];
+        for (int i = 0; sessionArray.TryReadNext(session, out WtsSessionInfo? sessionInfo); i++)
         {
-            if (IntPtr.Zero != pSessions)
-            {
-                WTSApi32.WTSFreeMemory(pSessions);
-            }
+            sessionList[i] = sessionInfo;
         }
 
         return sessionList;
     }
 
-    private static void AddSessionInfo(WtsSessionInfo[] sessionList, SafeWtsSessionHandle handle, ref int index, ref long current, ref long dataSize)
-    {
-        // Marshal the current pointer to a WTS_SESSION_INFO struct.
-        WTS_SESSION_INFO sessionInfo = MarshalHelper.PtrToStruct<WTS_SESSION_INFO>((IntPtr)current);
+    //private static void AddSessionInfo(WtsSessionInfo[] sessionList, WtsSessionSafeHandle handle, ref int index, ref long current, ref long dataSize)
+    //{
+    //    // Marshal the current pointer to a WTS_SESSION_INFO struct.
+    //    WTS_SESSION_INFO sessionInfo = MarshalHelper.PtrToStruct<WTS_SESSION_INFO>((IntPtr)current);
 
-        IntPtr buffer = IntPtr.Zero;
-        try
-        {
-            bool success = WTSApi32.WTSQuerySessionInformation(
-                handle,
-                sessionInfo.SessionId,
-                WtsInfoClass.WTSSessionInfo,
-                out buffer,
-                out int bytesReturned
-            );
+    //    IntPtr buffer = IntPtr.Zero;
+    //    try
+    //    {
+    //        bool success = WTSApi32.WTSQuerySessionInformation(
+    //            handle,
+    //            sessionInfo.SessionId,
+    //            WtsInfoClass.WTSSessionInfo,
+    //            out buffer,
+    //            out int bytesReturned
+    //        );
 
-            if (!success || IntPtr.Zero == buffer || bytesReturned < Marshal.SizeOf(typeof(WTSINFO)))
-            {
-                return;
-            }
+    //        if (!success || IntPtr.Zero == buffer || bytesReturned < Marshal.SizeOf(typeof(WTSINFO)))
+    //        {
+    //            return;
+    //        }
 
-            WTSINFO wtsInfo = MarshalHelper.PtrToStruct<WTSINFO>(buffer);
-            string userName = QuerySessionInfoString(ref sessionInfo.SessionId, handle, WtsInfoClass.WTSUserName);
-            string domainName = QuerySessionInfoString(ref sessionInfo.SessionId, handle, WtsInfoClass.WTSDomainName);
-            string clientName = QuerySessionInfoString(ref sessionInfo.SessionId, handle, WtsInfoClass.WTSClientName);
+    //        WTSINFO wtsInfo = MarshalHelper.PtrToStruct<WTSINFO>(buffer);
+    //        string userName = QuerySessionInfoString(ref sessionInfo.SessionId, handle, WtsInfoClass.WTSUserName);
+    //        string domainName = QuerySessionInfoString(ref sessionInfo.SessionId, handle, WtsInfoClass.WTSDomainName);
+    //        string clientName = QuerySessionInfoString(ref sessionInfo.SessionId, handle, WtsInfoClass.WTSClientName);
 
-            ref long currentTime = ref wtsInfo.CurrentTime;
+    //        ref long currentTime = ref wtsInfo.CurrentTime;
 
-            sessionList[index] = new WtsSessionInfo
-            {
-                ClientName = clientName,
-                ComputerName = handle.ComputerName,
-                DomainName = domainName,
-                IdleTime = wtsInfo.LastInputTime > 0
-                    ? DateTime.FromFileTimeUtc(currentTime) - DateTime.FromFileTimeUtc(wtsInfo.LastInputTime)
-                    : null,
-                LogonTime = wtsInfo.LogonTime > 0
-                    ? DateTime.FromFileTimeUtc(wtsInfo.LogonTime).ToLocalTime()
-                    : null,
-                SessionId = sessionInfo.SessionId,
-                State = sessionInfo.State,
-                UserName = userName,
-                WinStationName = sessionInfo.pWinStationName,
-            };
-        }
-        finally
-        {
-            // Move the pointer to the next structure
-            current += dataSize;
+    //        sessionList[index] = new WtsSessionInfo
+    //        {
+    //            ClientName = clientName,
+    //            ComputerName = handle.ComputerName,
+    //            DomainName = domainName,
+    //            IdleTime = wtsInfo.LastInputTime > 0
+    //                ? DateTime.FromFileTimeUtc(currentTime) - DateTime.FromFileTimeUtc(wtsInfo.LastInputTime)
+    //                : null,
+    //            LogonTime = wtsInfo.LogonTime > 0
+    //                ? DateTime.FromFileTimeUtc(wtsInfo.LogonTime).ToLocalTime()
+    //                : null,
+    //            SessionId = sessionInfo.SessionId,
+    //            State = sessionInfo.State,
+    //            UserName = userName,
+    //            WinStationName = sessionInfo.pWinStationName,
+    //        };
+    //    }
+    //    finally
+    //    {
+    //        // Move the pointer to the next structure
+    //        current += dataSize;
 
-            if (buffer != IntPtr.Zero)
-            {
-                WTSApi32.WTSFreeMemory(buffer);
-            }
-        }
-    }
+    //        if (buffer != IntPtr.Zero)
+    //        {
+    //            WTSApi32.WTSFreeMemory(buffer);
+    //        }
+    //    }
+    //}
 }

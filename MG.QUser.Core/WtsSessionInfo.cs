@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MG.QUser.Core.Internal.Structs;
+using System;
 
 #nullable enable
 
@@ -51,5 +52,22 @@ public sealed class WtsSessionInfo : IComparable<WtsSessionInfo>
     public int CompareTo(WtsSessionInfo? other)
     {
         return other is null ? -1 : this.SessionId.CompareTo(other.SessionId);
+    }
+
+    internal static WtsSessionInfo Create(string computerName, ref WTS_SESSION_INFO wtsSessionInfo, ref WTSINFO wtsInfo)
+    {
+        return new WtsSessionInfo
+        {
+            ComputerName = computerName,
+            IdleTime = wtsInfo.LastInputTime > 0
+                    ? DateTime.FromFileTimeUtc(wtsInfo.CurrentTime) - DateTime.FromFileTimeUtc(wtsInfo.LastInputTime)
+                    : null,
+            LogonTime = wtsInfo.LogonTime > 0
+                    ? DateTime.FromFileTimeUtc(wtsInfo.LogonTime).ToLocalTime()
+                    : null,
+            SessionId = wtsSessionInfo.SessionId,
+            State = wtsSessionInfo.State,
+            WinStationName = wtsSessionInfo.pWinStationName,
+        };
     }
 }
