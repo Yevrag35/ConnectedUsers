@@ -4,13 +4,12 @@ using System.Runtime.InteropServices;
 
 namespace MG.QUser.Core.Internal.Handles;
 
-internal sealed class WtsBufferHandle : SafeHandle
+internal sealed class WtsBufferHandle : WtsSafeHandle
 {
-    public override bool IsInvalid => IntPtr.Zero == handle;
     internal int BytesReturned { get; private set; }
     internal bool Result { get; private set; }
 
-    internal WtsBufferHandle(ref bool result, ref int pBytesReturned) : base(IntPtr.Zero, ownsHandle: true)
+    internal WtsBufferHandle(ref bool result, ref int pBytesReturned) : base()
     {
         this.Result = result;
         this.BytesReturned = pBytesReturned;
@@ -21,6 +20,11 @@ internal sealed class WtsBufferHandle : SafeHandle
         WtsBufferHandle safeHandle = new(ref result, ref pBytesReturned);
         safeHandle.SetHandle(handle);
         return safeHandle;
+    }
+    protected private override void OnHandleReleased()
+    {
+        this.BytesReturned = 0;
+        this.Result = false;
     }
     /// <summary>
     /// Reads the buffer handle as a <see cref="string"/> using the ANSI encoding.
@@ -38,15 +42,8 @@ internal sealed class WtsBufferHandle : SafeHandle
             ? Marshal.PtrToStringAnsi(handle)
             : string.Empty;
     }
-
-    protected override bool ReleaseHandle()
+    protected private override void ReleaseHandle(ref IntPtr handle)
     {
-        if (!this.IsInvalid)
-        {
-            WTSApi32.WTSFreeMemory(handle);
-        }
-
-        handle = IntPtr.Zero;
-        return true;
+        WTSApi32.WTSFreeMemory(handle);
     }
 }

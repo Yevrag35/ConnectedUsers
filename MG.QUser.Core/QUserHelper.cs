@@ -32,8 +32,6 @@ public static partial class QUserHelper
     /// <exception cref="Win32Exception"/>
     public static WtsSessionInfo[] GetAllSessions(string? computerName)
     {
-        IntPtr pSessions = IntPtr.Zero;
-
         WtsSessionInfo[] sessionList = [];
 
         using WtsSessionSafeHandle session = WtsSessionSafeHandle.OpenConnection(computerName);

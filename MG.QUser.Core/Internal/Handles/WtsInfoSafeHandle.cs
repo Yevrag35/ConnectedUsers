@@ -5,18 +5,16 @@ using System.Runtime.InteropServices;
 
 namespace MG.QUser.Core.Internal.Handles;
 
-internal sealed class WtsInfoSafeHandle : SafeHandle
+internal sealed class WtsInfoSafeHandle : WtsSafeHandle
 {
     private static readonly int WTSINFO_SIZE = Marshal.SizeOf(typeof(WTSINFO));
 
     internal bool Result { get; private set; }
 
-    internal WtsInfoSafeHandle(ref bool result) : base(IntPtr.Zero, ownsHandle: true)
+    internal WtsInfoSafeHandle(ref bool result) : base()
     {
         this.Result = result;
     }
-
-    public override bool IsInvalid => IntPtr.Zero == handle;
 
     internal static WtsInfoSafeHandle Create(ref IntPtr handle, ref bool result, ref int pBytesReturned)
     {
@@ -40,16 +38,12 @@ internal sealed class WtsInfoSafeHandle : SafeHandle
 
         return MarshalHelper.PtrToStruct<WTSINFO>(handle);
     }
-
-    protected override bool ReleaseHandle()
+    protected private override void OnHandleReleased()
     {
-        if (!this.IsInvalid)
-        {
-            WTSApi32.WTSFreeMemory(handle);
-        }
-
-        handle = IntPtr.Zero;
         this.Result = false;
-        return true;
+    }
+    protected private override void ReleaseHandle(ref IntPtr handle)
+    {
+        WTSApi32.WTSFreeMemory(handle);
     }
 }
