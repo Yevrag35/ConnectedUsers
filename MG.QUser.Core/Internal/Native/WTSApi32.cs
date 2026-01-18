@@ -19,8 +19,8 @@ internal static class WTSApi32
 
     internal static WtsSessionArraySafeHandle WTSEnumerateSessions(WtsSessionSafeHandle hServer)
     {
-        bool result = WTSEnumerateSessions(hServer, Reserved: 0, Version: 1, out IntPtr ppSessions, out int count);
-        return WtsSessionArraySafeHandle.Create(ref ppSessions, ref count, ref result);
+        bool result = WTSEnumerateSessions(hServer, Reserved: 0, Version: 1, out IntPtr pSessions, out int count);
+        return WtsSessionArraySafeHandle.Create(pSessions, count, result);
     }
 
     // P/Invoke for WTSEnumerateSessions
@@ -36,7 +36,7 @@ internal static class WTSApi32
     [DllImport("wtsapi32.dll", SetLastError = true)]
     internal static extern void WTSFreeMemory(IntPtr pMemory);
 
-    internal static WtsInfoSafeHandle WTSQuerySessionInformation(ref int sessionId, WtsSessionSafeHandle sessionHandle)
+    internal static WtsInfoSafeHandle WTSQuerySessionInformation(int sessionId, WtsSessionSafeHandle sessionHandle)
     {
         bool result = WTSQuerySessionInformation(
             sessionHandle,
@@ -45,9 +45,9 @@ internal static class WTSApi32
             out IntPtr buffer,
             out int pBytesReturned);
 
-        return WtsInfoSafeHandle.Create(ref buffer, ref result, ref pBytesReturned);
+        return WtsInfoSafeHandle.Create(buffer, result, pBytesReturned);
     }
-    internal static WtsBufferHandle WTSQuerySessionInformation(ref int sessionId, WtsSessionSafeHandle sessionHandle, WtsInfoClass infoClass)
+    internal static WtsBufferHandle WTSQuerySessionInformation(int sessionId, WtsSessionSafeHandle sessionHandle, WtsInfoClass infoClass)
     {
         bool result = WTSQuerySessionInformation(
             sessionHandle,
@@ -56,7 +56,7 @@ internal static class WTSApi32
             out IntPtr buffer,
             out int pBytesReturned);
 
-        return WtsBufferHandle.Create(ref buffer, ref result, ref pBytesReturned);
+        return WtsBufferHandle.Create(buffer, result, pBytesReturned);
     }
 
     // P/Invoke for WTSQuerySessionInformation

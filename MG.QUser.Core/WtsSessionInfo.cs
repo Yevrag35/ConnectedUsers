@@ -23,15 +23,23 @@ public sealed class WtsSessionInfo : IComparable<WtsSessionInfo>
     /// </summary>
     public string? ClientName { get; set; }
 
+    /// <summary>
+    /// Gets or sets the name of the computer the session is associated with.
+    /// </summary>
     public string ComputerName { get; set; } = string.Empty;
 
     /// <summary>
     /// The user's domain name (if any).
     /// </summary>
     public string? DomainName { get; set; }
-
+    /// <summary>
+    /// Gets or sets the duration of inactivity the session has experienced.
+    /// </summary>
     public TimeSpan? IdleTime { get; set; }
 
+    /// <summary>
+    /// Gets or sets the date and time when the user last logged on.
+    /// </summary>
     public DateTimeOffset? LogonTime { get; set; }
 
     /// <summary>
@@ -54,6 +62,15 @@ public sealed class WtsSessionInfo : IComparable<WtsSessionInfo>
         return other is null ? -1 : this.SessionId.CompareTo(other.SessionId);
     }
 
+    /// <summary>
+    /// Creates a new instance of the <see cref="WtsSessionInfo"/> class using the specified computer name and session information.
+    /// </summary>
+    /// <param name="computerName">The name of the computer associated with the session.</param>
+    /// <param name="wtsSessionInfo">A reference to a <see cref="WTS_SESSION_INFO"/> structure containing basic session details. The structure is used to populate
+    /// session-related properties.</param>
+    /// <param name="wtsInfo">A reference to a <see cref="WTSINFO"/> structure containing extended session information, such as logon and idle times. The
+    /// structure is used to populate time-related properties.</param>
+    /// <returns>A <see cref="WtsSessionInfo"/> object initialized with the provided session and computer information.</returns>
     internal static WtsSessionInfo Create(string computerName, ref WTS_SESSION_INFO wtsSessionInfo, ref WTSINFO wtsInfo)
     {
         return new WtsSessionInfo

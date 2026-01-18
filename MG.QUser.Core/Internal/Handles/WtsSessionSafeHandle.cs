@@ -41,7 +41,7 @@ internal sealed class WtsSessionSafeHandle : SafeHandle
     {
         return string.IsNullOrWhiteSpace(computerName)
             || computerName!.Equals(ComputerNameHelper.ComputerName, StringComparison.OrdinalIgnoreCase)
-            || computerName.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+            || computerName.Equals("LOCALHOST", StringComparison.Ordinal)
             || computerName.Equals(".", StringComparison.Ordinal);
     }
     protected override bool ReleaseHandle()

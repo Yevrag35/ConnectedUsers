@@ -11,15 +11,15 @@ internal sealed class WtsInfoSafeHandle : WtsSafeHandle
 
     internal bool Result { get; private set; }
 
-    internal WtsInfoSafeHandle(ref bool result) : base()
+    internal WtsInfoSafeHandle(bool result) : base()
     {
         this.Result = result;
     }
 
-    internal static WtsInfoSafeHandle Create(ref IntPtr handle, ref bool result, ref int pBytesReturned)
+    internal static WtsInfoSafeHandle Create(IntPtr handle, bool result, int pBytesReturned)
     {
         result = result && IntPtr.Zero != handle && pBytesReturned >= WTSINFO_SIZE;
-        WtsInfoSafeHandle safeHandle = new(ref result);
+        WtsInfoSafeHandle safeHandle = new(result);
         safeHandle.SetHandle(handle);
         return safeHandle;
     }
@@ -42,7 +42,7 @@ internal sealed class WtsInfoSafeHandle : WtsSafeHandle
     {
         this.Result = false;
     }
-    protected private override void ReleaseHandle(ref IntPtr handle)
+    protected private override void ReleaseHandle(IntPtr handle)
     {
         WTSApi32.WTSFreeMemory(handle);
     }

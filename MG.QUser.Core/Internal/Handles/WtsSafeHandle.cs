@@ -16,12 +16,12 @@ public abstract class WtsSafeHandle : SafeHandle
     {
         if (!this.IsInvalid)
         {
-            this.ReleaseHandle(ref handle);
+            this.ReleaseHandle(handle);
         }
 
         handle = IntPtr.Zero;
         this.OnHandleReleased();
         return true;
     }
-    protected private abstract void ReleaseHandle(ref IntPtr handle);
+    protected private abstract void ReleaseHandle(IntPtr handle);
 }

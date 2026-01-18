@@ -9,15 +9,15 @@ internal sealed class WtsBufferHandle : WtsSafeHandle
     internal int BytesReturned { get; private set; }
     internal bool Result { get; private set; }
 
-    internal WtsBufferHandle(ref bool result, ref int pBytesReturned) : base()
+    internal WtsBufferHandle(bool result, int pBytesReturned) : base()
     {
         this.Result = result;
         this.BytesReturned = pBytesReturned;
     }
 
-    internal static WtsBufferHandle Create(ref IntPtr handle, ref bool result, ref int pBytesReturned)
+    internal static WtsBufferHandle Create(IntPtr handle, bool result, int pBytesReturned)
     {
-        WtsBufferHandle safeHandle = new(ref result, ref pBytesReturned);
+        WtsBufferHandle safeHandle = new(result, pBytesReturned);
         safeHandle.SetHandle(handle);
         return safeHandle;
     }
@@ -42,7 +42,7 @@ internal sealed class WtsBufferHandle : WtsSafeHandle
             ? Marshal.PtrToStringAnsi(handle)
             : string.Empty;
     }
-    protected private override void ReleaseHandle(ref IntPtr handle)
+    protected private override void ReleaseHandle(IntPtr handle)
     {
         WTSApi32.WTSFreeMemory(handle);
     }
