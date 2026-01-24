@@ -9,17 +9,17 @@ internal static class WTSApi32
     #region SERVER CONNECTIONS
     // WTSOpenServer opens a handle to a remote (or local) server
     [DllImport("wtsapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    internal static extern IntPtr WTSOpenServer(string pServerName);
+    internal static extern nint WTSOpenServer(string pServerName);
 
     // WTSCloseServer closes that handle
     [DllImport("wtsapi32.dll", SetLastError = true)]
-    internal static extern void WTSCloseServer(IntPtr hServer);
+    internal static extern void WTSCloseServer(nint hServer);
 
     #endregion
 
     internal static WtsSessionArraySafeHandle WTSEnumerateSessions(WtsSessionSafeHandle hServer)
     {
-        bool result = WTSEnumerateSessions(hServer, Reserved: 0, Version: 1, out IntPtr pSessions, out int count);
+        bool result = WTSEnumerateSessions(hServer, Reserved: 0, Version: 1, out nint pSessions, out int count);
         return WtsSessionArraySafeHandle.Create(pSessions, count, result);
     }
 
@@ -29,12 +29,12 @@ internal static class WTSApi32
         WtsSessionSafeHandle hServer,
         int Reserved,
         int Version,
-        out IntPtr pSessionInfo,
+        out nint pSessionInfo,
         out int pCount);
 
     // P/Invoke for WTSFreeMemory
     [DllImport("wtsapi32.dll", SetLastError = true)]
-    internal static extern void WTSFreeMemory(IntPtr pMemory);
+    internal static extern void WTSFreeMemory(nint pMemory);
 
     internal static WtsInfoSafeHandle WTSQuerySessionInformation(int sessionId, WtsSessionSafeHandle sessionHandle)
     {
@@ -42,7 +42,7 @@ internal static class WTSApi32
             sessionHandle,
             sessionId,
             WtsInfoClass.WTSSessionInfo,
-            out IntPtr buffer,
+            out nint buffer,
             out int pBytesReturned);
 
         return WtsInfoSafeHandle.Create(buffer, result, pBytesReturned);
@@ -53,7 +53,7 @@ internal static class WTSApi32
             sessionHandle,
             sessionId,
             infoClass,
-            out IntPtr buffer,
+            out nint buffer,
             out int pBytesReturned);
 
         return WtsBufferHandle.Create(buffer, result, pBytesReturned);
@@ -65,7 +65,6 @@ internal static class WTSApi32
         WtsSessionSafeHandle hServer,
         int sessionId,
         WtsInfoClass wtsInfoClass,
-        out IntPtr ppBuffer,
-        out int pBytesReturned
-    );
+        out nint ppBuffer,
+        out int pBytesReturned);
 }

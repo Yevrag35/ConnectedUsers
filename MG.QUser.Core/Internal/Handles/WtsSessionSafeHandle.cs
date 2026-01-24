@@ -1,17 +1,14 @@
 ﻿using MG.QUser.Core.Internal.Native;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.InteropServices;
 
 namespace MG.QUser.Core.Internal.Handles;
 
-internal sealed class WtsSessionSafeHandle : SafeHandle
+internal sealed class WtsSessionSafeHandle : WtsSafeHandle
 {
     internal string ComputerName { get; }
-    public override bool IsInvalid => IntPtr.Zero == handle;
 
     private WtsSessionSafeHandle(string computerName)
-        : base(IntPtr.Zero, true)
     {
         this.ComputerName = computerName;
     }
@@ -26,12 +23,12 @@ internal sealed class WtsSessionSafeHandle : SafeHandle
     {
         // Decide if local or remote
         string machineName = (computerName ?? ComputerNameHelper.ComputerName).ToUpperInvariant();
-        IntPtr rawHandle = IsLocalHost(machineName)
+        nint rawHandle = IsLocalHost(machineName)
             ? MemoryHelper.WTS_CURRENT_SERVER_HANDLE
             : WTSApi32.WTSOpenServer(machineName);
 
         // Construct and set
-        var safeHandle = new WtsSessionSafeHandle(machineName);
+        WtsSessionSafeHandle safeHandle = new(machineName);
         safeHandle.SetHandle(rawHandle);
 
         return safeHandle;
@@ -40,20 +37,16 @@ internal sealed class WtsSessionSafeHandle : SafeHandle
     private static bool IsLocalHost([NotNullWhen(false)] string? computerName)
     {
         return string.IsNullOrWhiteSpace(computerName)
-            || computerName!.Equals(ComputerNameHelper.ComputerName, StringComparison.OrdinalIgnoreCase)
+            || computerName!.Equals(".", StringComparison.Ordinal)
             || computerName.Equals("LOCALHOST", StringComparison.Ordinal)
-            || computerName.Equals(".", StringComparison.Ordinal);
+            || computerName.Equals(ComputerNameHelper.ComputerName, StringComparison.OrdinalIgnoreCase);
     }
-    protected override bool ReleaseHandle()
+    private protected override void ReleaseHandle(nint handle)
     {
         // Ensure we only close valid, non-local handles.
-        if (!this.IsInvalid && handle != MemoryHelper.WTS_CURRENT_SERVER_HANDLE)
+        if (handle != MemoryHelper.WTS_CURRENT_SERVER_HANDLE)
         {
             WTSApi32.WTSCloseServer(handle);
         }
-
-        // Mark handle as closed/invalid
-        handle = IntPtr.Zero;
-        return true;
     }
 }

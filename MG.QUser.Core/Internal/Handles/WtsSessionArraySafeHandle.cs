@@ -13,7 +13,7 @@ namespace MG.QUser.Core.Internal.Handles;
 /// <para>Instances own unmanaged memory that must be released exactly once.</para>
 /// <para><b>Thread-safety:</b> This type is not thread-safe; enumeration state is stored on the instance.</para>
 /// </remarks>
-internal sealed class WtsSessionArraySafeHandle : SafeHandle
+internal sealed class WtsSessionArraySafeHandle : WtsSafeHandle
 {
     /// <summary>
     /// Get the size, in bytes, of a single session information structure in unmanaged memory.
@@ -36,15 +36,6 @@ internal sealed class WtsSessionArraySafeHandle : SafeHandle
     internal int Count => _count;
 
     /// <summary>
-    /// Get a value indicating whether this handle is invalid.
-    /// </summary>
-    /// <remarks>
-    /// <para>The handle is considered invalid when it is equal to <see cref="IntPtr.Zero"/>.</para>
-    /// </remarks>
-    /// <returns><see langword="true"/> when the handle is invalid; otherwise, <see langword="false"/>.</returns>
-    public override bool IsInvalid => IntPtr.Zero == handle;
-
-    /// <summary>
     /// Get a value indicating whether the underlying native operation that produced this handle reported success.
     /// </summary>
     /// <returns><see langword="true"/> when the native operation succeeded; otherwise, <see langword="false"/>.</returns>
@@ -52,7 +43,6 @@ internal sealed class WtsSessionArraySafeHandle : SafeHandle
     internal bool Result { get; private set; }
 
     private WtsSessionArraySafeHandle(int arrayLength, bool result)
-        : base(IntPtr.Zero, true)
     {
         _count = arrayLength;
         this.Result = result;
@@ -68,7 +58,7 @@ internal sealed class WtsSessionArraySafeHandle : SafeHandle
     /// <param name="result">A value indicating whether the session information retrieval was successful. Set to <see langword="true"/> if
     /// successful; otherwise, <see langword="false"/>.</param>
     /// <returns>A <see cref="WtsSessionArraySafeHandle"/> that encapsulates the specified session information.</returns>
-    internal static WtsSessionArraySafeHandle Create(IntPtr pSessionInfo, int count, bool result)
+    internal static WtsSessionArraySafeHandle Create(nint pSessionInfo, int count, bool result)
     {
         WtsSessionArraySafeHandle handle = new(count, result);
         handle.SetHandle(pSessionInfo);
@@ -77,16 +67,9 @@ internal sealed class WtsSessionArraySafeHandle : SafeHandle
         return handle;
     }
 
-    protected override bool ReleaseHandle()
+    private protected override void ReleaseHandle(nint handle)
     {
-        if (!this.IsInvalid)
-        {
-            WTSApi32.WTSFreeMemory(handle);
-        }
-
-        handle = IntPtr.Zero;
-        _current = 0;
-        return true;
+        WTSApi32.WTSFreeMemory(handle);
     }
     private void SetCurrentValue(IntPtr pointer)
     {
@@ -146,7 +129,7 @@ internal sealed class WtsSessionArraySafeHandle : SafeHandle
     /// <returns>The marshaled session information structure.</returns>
     private static WTS_SESSION_INFO ReadNext(long current)
     {
-        return MarshalHelper.PtrToStruct<WTS_SESSION_INFO>((IntPtr)current);
+        return MarshalHelper.PtrToStruct<WTS_SESSION_INFO>((nint)current);
     }
     /// <summary>
     /// Set the client name on the provided session information by querying the current session.
